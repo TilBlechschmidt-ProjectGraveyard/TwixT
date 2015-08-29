@@ -47,6 +47,12 @@ class Ai:
                         a[VALUE] = a[INPUTS][0]
                         for c in a[INPUTS][1:]:
                             a[VALUE] -= c
+                elif a[KIND] == MUL:
+                    a[VALUE] = 0
+                    if len(a[INPUTS]) > 0:
+                        a[VALUE] = a[INPUTS][0]
+                        for c in a[INPUTS][1:]:
+                            a[VALUE] /= c
                 for b in a[TARGETS]:
                     self.ai[i+1][b][INPUTS].append(a[VALUE])
 
@@ -62,7 +68,7 @@ class Ai:
         mode = random.randint(0, 1)
         if mode == 0:  # change operator
             random.choice(random.choice(self.ai))[0] = random.choice(operations)
-        if mode == 1:  # add node
+        elif mode == 1:  # add node
             line = random.randint(1, len(self.ai)-2)
             random.choice(self.ai[line]).append(copy.deepcopy(self.basic_node))
             number = len(self.ai[line])-1
@@ -73,7 +79,7 @@ class Ai:
 
 
 
-ai = Ai([2, 5, 1, 1, 1, 1, 1], 4)
+ai = Ai([6, 5, 1, 1, 1, 1, 1], 4)
 
 old_food_count = -1
 old_ai = []
@@ -84,54 +90,36 @@ while True:
     food_x = random.randint(0, 10)
     food_y = random.randint(0, 10)
     food_count = 0
-    for lap in range(1000):
+    for testlap in range(10):
+        for lap in range(1000):
+            step = round(ai.simple_calc([food_x-player_x, food_y-player_y, food_x, food_y, player_x, player_y])[0]/5.0) % 4
+            #print(player_y)
+            #print(ai.simple_calc([food_x-player_x, food_y-player_y])[0])
+            #print(step)
+            if step == 0:
+                player_x += 1
+            elif step == 1:
+                player_y += 1
+            elif step == 2:
+                player_x -= 1
+            else:
+                player_y -= 1
+            if player_x == food_x and player_y == food_y:
+                food_count += 1
+                food_x = random.randint(0, 10)
+                food_y = random.randint(0, 10)
 
-        step = round(ai.simple_calc([food_x-player_x, food_y-player_y])[0]/5)%4
-        #print(player_y)
-        #print(ai.simple_calc([food_x-player_x, food_y-player_y])[0])
-        #print(step)
-        if step == 0:
-            player_x += 1
-        elif step == 1:
-            player_y += 1
-        elif step == 2:
-            player_x -= 1
-        else:
-            player_y -= 1
-        if player_x == food_x and player_y == food_y:
-            food_count += 1
-            food_x = random.randint(0, 10)
-            food_y = random.randint(0, 10)
-        #if food_count > 0:
-        #    print(food_x, food_y)
-        #    print(player_x, player_y)
-
-    # print('Generation ' + str(generation) + ': ' + str(food_count))
-    # print(player_x)
-    # print(player_y)
-
-    if food_count >= old_food_count:
-        old_food_count == food_count
+    if (food_count/10) >= old_food_count:
+        old_food_count == (food_count/10)
         ai.mutate()
         old_ai = ai.get_ai()
-        if food_count > max_food:
-            max_food = food_count
-            print('Generation ' + str(generation) + ': ' + str(food_count))
+        if (food_count/10) >= max_food:
+            max_food = (food_count/10)
+            print('Generation ' + str(generation) + ': ' + str((food_count/10)))
     else:
         ai.set_ai(old_ai)
         ai.mutate()
     generation += 1
 
 print(max_food)
-
-
-
-
-
-
-#print(ai.ai)
-#for i in range(8):
-#    ai.mutate()
-#print(ai.ai)
-#print(round(ai.simple_calc([1, 1])[0]/2 % 4))
 
