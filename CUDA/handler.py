@@ -14,6 +14,8 @@ from clients import AI, Enemy
 boards = None
 ai_strings = None
 actions = None
+links = None
+
 parallel_count = 0
 
 d_boards = None
@@ -48,18 +50,20 @@ def setup(game_count, board_size, ai_str):
     b = create_new_boards(game_count, board_size)
     act = create_new_actions(game_count)
 
-    global boards, ai_strings, actions, parallel_count
+    global boards, ai_strings, actions, links, parallel_count
     ai_strings = np.asarray(ai_str)
     actions = act
     boards = b
+    links = b
     parallel_count = game_count
 
 
 def transfer_data():
-    global d_boards, d_actions, d_ais
+    global d_boards, d_actions, d_ais, d_links
     d_boards = cuda.to_device(boards)
     d_ais = cuda.to_device(ai_strings)
     d_actions = cuda.to_device(actions)
+    d_links = cuda.to_device(links)
 
 
 def next_round():
@@ -69,11 +73,11 @@ def next_round():
     blockspergrid = (len(boards) + (threadsperblock - 1))
 
     if round_counter % 2 == 0:
-        AI.run[blockspergrid, threadsperblock](d_boards, d_ais, d_actions)
+        AI.run[blockspergrid, threadsperblock](d_boards, d_actions, d_links, d_ais)
     else:
-        Enemy.run[blockspergrid, threadsperblock](d_boards, d_ais, d_actions)
+        Enemy.run[blockspergrid, threadsperblock](d_boards, d_actions, d_links)
 
-    server.execute[blockspergrid, threadsperblock](d_boards, d_actions)
+    server.execute[blockspergrid, threadsperblock](d_boards, d_actions, d_links)
     d_actions = cuda.to_device(actions)
 
     round_counter += 1
@@ -84,7 +88,8 @@ def calculate_max_parallel_count():  # Available remaining buffer of about 20% V
     usable_mem = round(available_mem * 0.95)
     list_size = sys.getsizeof([])
     list_entry_size = sys.getsizeof([2]) - list_size
-    return (usable_mem - list_size * 3) / (list_entry_size * 24 + list_entry_size + list_entry_size)
+    return (usable_mem - list_size * 4) / (
+    list_entry_size * 24 + list_entry_size + list_entry_size + list_entry_size * 24)
 
 
 def main():
@@ -98,10 +103,10 @@ def main():
     start = timer()
     transfer_data()
     print("DTransfer: ", (timer() - start))
-    # start = timer()
-    # for i in range(25):
-    next_round()
-    # print("Round " + str(i+1) + ": ", (timer() - start))
+    start = timer()
+    for i in range(1):
+        next_round()
+        print("Round " + str(i + 1) + ": ", (timer() - start))
 
 
 if __name__ == '__main__':

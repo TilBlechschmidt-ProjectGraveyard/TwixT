@@ -4,9 +4,9 @@ from numba import cuda
 
 
 @cuda.jit
-def run(d_boards, d_ais, d_actions):
+def run(d_boards, d_actions, d_links, d_ais):
     pos = cuda.grid(1)
-    if pos < len(d_boards) and pos < len(d_actions):
+    if pos < len(d_boards) and pos < len(d_actions) and pos < len(d_links) and pos < len(d_ais):
         board = d_boards[pos]
         ais = d_ais[pos]
 
