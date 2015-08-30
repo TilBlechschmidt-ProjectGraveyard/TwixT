@@ -22,7 +22,7 @@ def run(d_boards, d_actions, d_links, d_ais):
                 node[INPUTS] = []
 
         # Set the inputs
-        for i in range(len(board)):
+        for i in range(len(board[:4])):
             ais[0][i * 2][INPUTS] = board[i]
             ais[0][i * 2 + 1][INPUTS] = links[i]
 

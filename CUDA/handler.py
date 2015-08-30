@@ -124,7 +124,7 @@ def main():
     print("Running " + comma_me(str(y)) + " games in parallel.")
 
     start = timer()
-    reset(y, 24, [Ai([1152, 100, 4, 3, 1], 4).ai] * y)
+    reset(y, 24, [Ai([8, 2, 4, 3, 1], 4).ai] * y)
     print("Setup: ", (timer() - start))
 
     start = timer()
