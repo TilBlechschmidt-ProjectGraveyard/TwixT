@@ -2,12 +2,14 @@ __author__ = 'TheMegaTB'
 
 import sys
 import re
+import random
+import copy
 from timeit import default_timer as timer
+
+import numpy as np
 
 from numba import cuda
 from numba import jit
-import numpy as np
-
 import server
 from clients import AI, Enemy
 
@@ -26,6 +28,25 @@ d_links = None
 round_counter = 0
 
 
+# ---- HELPER FUNCTIONS ----
+
+class Ai:
+    def __init__(self, structure, connections):
+        self.basic_node = [0, 0, [], []]
+        self.ai = []
+        for s in structure:
+            line = []
+            for i in range(s):
+                line.append(copy.deepcopy(self.basic_node))
+                line[-1][0] = random.randint(0, 1)
+            self.ai.append(line)  # kind, value, inputs, target
+
+        for i in range(len(self.ai) - 1):
+            for j in range(len(self.ai[i])):
+                for c in range(connections):
+                    d = random.choice(range(len(self.ai[i + 1])))
+                    self.ai[i][j][3].append(d)
+
 def comma_me(amount):
     orig = amount
     new = re.sub("^(-?\d+)(\d{3})", '\g<1>,\g<2>', amount)
@@ -43,6 +64,9 @@ def create_new_boards(count, size):
 @jit
 def create_new_actions(count):
     return np.zeros(count)
+
+
+# ---- HELPER FUNCTIONS END ----
 
 
 def reset(game_count, board_size, ai_str):
@@ -100,7 +124,7 @@ def main():
     print("Running " + comma_me(str(y)) + " games in parallel.")
 
     start = timer()
-    reset(y, 24, ['+-/'] * y)
+    reset(y, 24, [Ai([1152, 100, 4, 3, 1], 4).ai] * y)
     print("Setup: ", (timer() - start))
 
     start = timer()
