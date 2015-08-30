@@ -19,6 +19,7 @@ parallel_count = 0
 d_boards = None
 d_ais = None
 d_actions = None
+d_links = None
 
 round_counter = 0
 
@@ -72,7 +73,7 @@ def next_round():
     else:
         Enemy.run[blockspergrid, threadsperblock](d_boards, d_ais, d_actions)
 
-    server.execute[blockspergrid, threadsperblock](d_boards, d_ais, d_actions)
+    server.execute[blockspergrid, threadsperblock](d_boards, d_actions)
     d_actions = cuda.to_device(actions)
 
     round_counter += 1
