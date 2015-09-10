@@ -31,6 +31,7 @@ round_counter = 0
 # ---- HELPER FUNCTIONS ----
 
 class Ai:
+    @jit
     def __init__(self, structure, connections):
         self.basic_node = [0, 0, [], []]
         self.ai = []
@@ -46,6 +47,7 @@ class Ai:
                 for c in range(connections):
                     d = random.choice(range(len(self.ai[i + 1])))
                     self.ai[i][j][3].append(d)
+
 
 def comma_me(amount):
     orig = amount
@@ -70,7 +72,6 @@ def create_new_actions(count):
 
 
 def reset(game_count, board_size, ai_str):
-
     b = create_new_boards(game_count, board_size)
     act = create_new_actions(game_count)
 
@@ -124,7 +125,7 @@ def main():
     print("Running " + comma_me(str(y)) + " games in parallel.")
 
     start = timer()
-    reset(y, 24, [Ai([8, 2, 4, 3, 1], 4).ai] * y)
+    reset(y, 24, [2, 1, -1, 4, 0.5, -0.5, 3, 1, -1, 4, 0.5, -0.5] * y)  # Ai([8, 2, 4, 3, 1], 4).ai
     print("Setup: ", (timer() - start))
 
     start = timer()
@@ -132,7 +133,7 @@ def main():
     print("DTransfer: ", (timer() - start))
 
     times = []
-    for i in range(50):
+    for i in range(5000):
         start = timer()
         next_round()
         times.append(timer() - start)
