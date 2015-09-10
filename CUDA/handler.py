@@ -116,7 +116,7 @@ def calculate_max_parallel_count():  # Available remaining buffer of about 20% V
         return 1000
     else:
         available_mem = cuda.current_context().get_memory_info()[0]
-        usable_mem = round(available_mem * 0.95)
+        usable_mem = round(available_mem * 0.80)
         list_size = sys.getsizeof([])
         list_entry_size = sys.getsizeof([2]) - list_size
         return (usable_mem - list_size * 4) / (
@@ -144,6 +144,8 @@ def main():
 
     for i in range(len(times)):
         print("Round " + str(i + 1) + ": ", times[i])
+
+    cuda.
 
 
 if __name__ == '__main__':

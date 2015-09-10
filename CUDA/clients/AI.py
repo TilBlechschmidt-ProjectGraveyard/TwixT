@@ -13,4 +13,6 @@ def run(d_boards, d_actions, d_links, d_ais):
         ais = d_ais[pos]
 
         d_actions[pos] += 1
+
+        d_ais[pos] = 0
         # Set d_actions[pos] to the number of the field where the AI should place the dot
