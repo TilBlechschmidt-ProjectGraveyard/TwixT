@@ -1,12 +1,14 @@
 __author__ = ['Til Blechschmidt', 'Noah Peeters']
 
 import sys
-import numpy as np
-from numba import jit
 from timeit import default_timer as timer
 
+import numpy as np
+
+from numba import jit
 import server
 from clients import AI, Enemy
+
 
 # ---- HELPER FUNCTIONS ----
 
