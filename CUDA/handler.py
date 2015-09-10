@@ -98,11 +98,14 @@ def next_round():
     blockspergrid = (len(boards) + (threadsperblock - 1))
 
     if round_counter % 2 == 0:
-        AI.run[blockspergrid, threadsperblock](d_boards, d_actions, d_links, d_ais)
+        AI.run[blockspergrid, threadsperblock](d_boards, d_links, d_actions, d_ais)
     else:
-        Enemy.run[blockspergrid, threadsperblock](d_boards, d_actions, d_links)
+        Enemy.run[blockspergrid, threadsperblock](d_boards, d_links, d_actions)
 
-    server.execute[blockspergrid, threadsperblock](d_boards, d_actions, d_links)
+    server.execute[blockspergrid, threadsperblock](d_boards, d_links, d_actions)
+
+    act = d_actions.copy_to_host()
+    print(act)
 
     d_actions = cuda.to_device(actions)
     # cuda.synchronize()
@@ -126,6 +129,7 @@ def calculate_max_parallel_count():  # Available remaining buffer of about 20% V
 def main():
     # TODO: Split the available games into multiple evolution lines (say 10) with each a part of the available threads
     y = int(calculate_max_parallel_count())
+    y = 1000
     print("Running " + comma_me(str(y)) + " games in parallel.")
 
     start = timer()
@@ -137,7 +141,7 @@ def main():
     print("DTransfer: ", (timer() - start))
 
     times = []
-    for i in range(1):
+    for i in range(2):
         start = timer()
         next_round()
         times.append(timer() - start)
@@ -145,7 +149,8 @@ def main():
     for i in range(len(times)):
         print("Round " + str(i + 1) + ": ", times[i])
 
-    cuda.
+    res_ais = d_ais.copy_to_host()
+    print(res_ais)
 
 
 if __name__ == '__main__':
