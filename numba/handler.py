@@ -16,6 +16,15 @@ def create_new_boards(count, size):
     return np.zeros((count, size))
 
 
+@jit
+def rotate_board_anti_clockwise(board, times=1):
+    return np.append([], np.rot90(np.reshape(board, (24, 24)), times))
+
+
+def rotate_board_clockwise(board, times=1):
+    return rotate_board_clockwise(board, -times)
+
+
 # ---- HELPER FUNCTIONS END ----
 
 # ---- VARIABLE DECLARATIONS ----
@@ -37,11 +46,15 @@ def reset(game_count, board_size):
 def next_round(gameid):
     global round_counter
 
-    AI.run()
-    server.run()
+    move = Enemy.run(boards[gameid])
+    server.run(boards[gameid], links[gameid], move, 0)
 
-    print(Enemy.run(boards[gameid]))
-    server.run()
+    boards[gameid] = rotate_board_clockwise(boards[gameid])
+
+    move = AI.run()
+    server.run(boards[gameid], links[gameid], move, 1)
+
+    boards[gameid] = rotate_board_anti_clockwise(boards[gameid])
 
     round_counter += 1
 

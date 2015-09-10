@@ -5,7 +5,7 @@ import random as rnd
 
 
 def run(board):
-    free_spaces = np.zeros(24 * 24 - 1)
+    free_spaces = np.empty(24 * 24)
 
     x = 0
     for i in range(len(board)):
