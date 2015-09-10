@@ -4,8 +4,8 @@ import random
 
 
 class Node:
-    def __init__(self, priorities):
-        self.priorities = priorities
+    def __init__(self):
+        self.priorities = []
 
     def calc(self, values):
         tmp = 0
@@ -28,15 +28,26 @@ class Layer:
         for node in self.nodes:
             node.add_priority()
 
+
 class AI:
-    def __init__(self):
+    def __init__(self, inputs, outputs):
         self.layers = []
 
-    def add_layer(self):
-        pass
+    def add_layer(self, i):
+        self.layers.insert(i, Layer())
 
-    def calculate(self):
-        pass
+    def add_nodes(self, i):
+        self.layers[i].nodes.append(Node())
+        for a in range(len(self.layers[i - 1])):
+            self.layers[i].nodes[-1].add_priority()
+
+    def calculate(self, values):
+        self.calculate_layer(-1, values)
+
+    def calculate_layer(self, i, values):
+        if i == -len(self.layers):
+            return self.layers[i].calculate(values)
+        return self.layers[i].calculate(self.calculate_layer(i - 1, values))
 
     def mutate(self):
         pass
