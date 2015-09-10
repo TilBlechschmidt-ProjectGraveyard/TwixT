@@ -7,9 +7,9 @@ import copy
 from timeit import default_timer as timer
 
 import numpy as np
-
 from numba import cuda
 from numba import jit
+
 import server
 from clients import AI, Enemy
 
@@ -46,6 +46,7 @@ class Ai:
                 for c in range(connections):
                     d = random.choice(range(len(self.ai[i + 1])))
                     self.ai[i][j][3].append(d)
+
 
 def comma_me(amount):
     orig = amount
@@ -104,22 +105,26 @@ def next_round():
     server.execute[blockspergrid, threadsperblock](d_boards, d_actions, d_links)
 
     d_actions = cuda.to_device(actions)
-    cuda.synchronize()
+    # cuda.synchronize()
 
     round_counter += 1
 
 
 def calculate_max_parallel_count():  # Available remaining buffer of about 20% VRAM is included in result
-    available_mem = cuda.current_context().get_memory_info()[0]
-    usable_mem = round(available_mem * 0.95)
-    list_size = sys.getsizeof([])
-    list_entry_size = sys.getsizeof([2]) - list_size
-    return (usable_mem - list_size * 4) / (
-        list_entry_size * 24 + list_entry_size + list_entry_size + list_entry_size * 24)
+    # TODO: MINOR - Take the amount of cores into account
+    if not callable(getattr(cuda, "current_context", None)):
+        return 1000
+    else:
+        available_mem = cuda.current_context().get_memory_info()[0]
+        usable_mem = round(available_mem * 0.95)
+        list_size = sys.getsizeof([])
+        list_entry_size = sys.getsizeof([2]) - list_size
+        return (usable_mem - list_size * 4) / (
+            list_entry_size * 24 + list_entry_size + list_entry_size + list_entry_size * 24)
 
 
 def main():
-    # TODO: Split the available games into multiple evolution (say 10) lines with each a part of the available threads
+    # TODO: Split the available games into multiple evolution lines (say 10) with each a part of the available threads
     y = int(calculate_max_parallel_count())
     print("Running " + comma_me(str(y)) + " games in parallel.")
 
@@ -132,7 +137,7 @@ def main():
     print("DTransfer: ", (timer() - start))
 
     times = []
-    for i in range(50):
+    for i in range(1):
         start = timer()
         next_round()
         times.append(timer() - start)
