@@ -1,4 +1,4 @@
-__author__ = 'Til Blechschmidt'
+__author__ = ['Til Blechschmidt', 'Noah Peeters']
 
 
 def run():
