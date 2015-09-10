@@ -1,1 +1,5 @@
-__author__ = 'themegatb'
+__author__ = ['Til Blechschmidt', 'Noah Peeters']
+
+
+def run():
+    None  # Hello world
