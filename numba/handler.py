@@ -15,7 +15,9 @@ from clients import AI, Enemy
 
 @jit
 def create_new_boards(count, size):
-    return np.zeros((count, size))
+    board = np.zeros(size)
+    board[2] = 3
+    return np.tile(board, (count, 1))
 
 
 @jit
@@ -25,6 +27,8 @@ def rotate_board_anti_clockwise(board, times=1):
 
 def rotate_board_clockwise(board, times=1):
     return rotate_board_anti_clockwise(board, -times)
+
+# def populate_swamps(boards):
 
 
 # ---- HELPER FUNCTIONS END ----
@@ -41,6 +45,7 @@ links = None
 def reset(game_count, board_size):
     global boards, links
     b = create_new_boards(game_count, board_size)
+    print b
     boards = b
     links = b
 
