@@ -26,7 +26,6 @@ class bcolors:
     RED = '\033[41m'
     BASE_BLUE = '\033[34;47m'
     BASE_RED = '\033[31;47m'
-    BLACK = '\033[30m'
     ENDC = '\033[0m'
 
 
@@ -116,7 +115,7 @@ def print_board(board):
             elif cur_loc == 4:
                 print bcolors.WHITE + str(cur_loc) + bcolors.ENDC,
             else:
-                print bcolors.BLACK + "#" + bcolors.ENDC,
+                print "-",
             location += 1
         print "|"
 
