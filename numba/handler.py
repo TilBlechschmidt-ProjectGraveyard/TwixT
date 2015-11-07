@@ -2,12 +2,16 @@
 
 __author__ = ['Til Blechschmidt', 'Noah Peeters']
 
-import sys, random, math
+import math
+import random
+import sys
 from timeit import default_timer as timer
+
 import numpy as np
 from numba import jit
+
 import server
-from clients import AI, Enemy
+from clients import Enemy
 
 # ---- VARIABLE DECLARATIONS ----
 
@@ -43,7 +47,6 @@ def generate_swamp_location(board_size=576):
 
 @jit
 def generate_swamp(size_constant, board):
-
     board_size = len(board)
     valid = False
     swamp_loc = 0
@@ -56,7 +59,8 @@ def generate_swamp(size_constant, board):
         for i in size_constant:
             # Checking for out-of-bounds, overlapping and clipping with sides (left, right, top, bottom)
             cur_loc = (swamp_loc + i)
-            if (cur_loc >= board_size) or (board[cur_loc] == 3) or (cur_loc % 24 == 0 or cur_loc % 24 == 23 or cur_loc/24 == 0 or cur_loc/24 == 23):
+            if (cur_loc >= board_size) or (board[cur_loc] == 3) or (
+                                        cur_loc % 24 == 0 or cur_loc % 24 == 23 or cur_loc / 24 == 0 or cur_loc / 24 == 23):
                 invalid = True
                 break
 
@@ -137,19 +141,19 @@ def reset(game_count, board_size):
     links = b
 
 
-def next_round(gameid):
+def next_round(game_id):
     global round_counter
 
-    move = Enemy.run(boards[gameid])
-    boards[gameid], links[gameid] = server.run(boards[gameid], links[gameid], move, 1)
+    move = Enemy.run(boards[game_id])
+    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, 1)
 
-    boards[gameid] = rotate_board_clockwise(boards[gameid])
+    boards[game_id] = rotate_board_clockwise(boards[game_id])
 
     # move = AI.run(boards[gameid])
-    move = Enemy.run(boards[gameid])
-    boards[gameid], links[gameid] = server.run(boards[gameid], links[gameid], move, 2)
+    move = Enemy.run(boards[game_id])
+    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, 2)
 
-    boards[gameid] = rotate_board_anti_clockwise(boards[gameid])
+    boards[game_id] = rotate_board_anti_clockwise(boards[game_id])
     round_counter += 1
 
 
@@ -174,7 +178,7 @@ def main():
         total_time += times[i]
 
     print("Total time: " + '\033[1m' + str(total_time * 1000) + " milliseconds" + '\033[0m')
-    print("Average time per round: " + '\033[1m' + str(np.mean(times[1:])*1000*1000) + " microseconds" + '\033[0m')
+    print("Average time per round: " + '\033[1m' + str(np.mean(times[1:]) * 1000 * 1000) + " microseconds" + '\033[0m')
 
 
 if __name__ == '__main__':

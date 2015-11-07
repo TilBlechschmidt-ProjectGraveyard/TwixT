@@ -1,13 +1,13 @@
 __author__ = ['Til Blechschmidt', 'Noah Peeters']
 
-import numpy as np
 import random as rnd
-from numba import jit, float32
+
+import numpy as np
+from numba import jit
 
 
 @jit(nopython=True)
 def run(board):
-
     free_spaces = np.zeros(528)
     x = 0
 

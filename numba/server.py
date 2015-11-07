@@ -10,12 +10,13 @@ def value_in_array(value, array):
     for i in array:
         if i == value:
             result = True
+            break
 
     return result
 
 
 @jit(nopython=True)
-def move_is_not_valid(board, move):
+def move_is_valid(board, move):
     free_spaces = np.zeros(528)
     x = 0
     for i in range(len(board)):
@@ -29,9 +30,10 @@ def move_is_not_valid(board, move):
     free_spaces = free_spaces[:x]
 
     if not value_in_array(move, free_spaces):
-        # print("INVALID MOVE")
+        # The move is invalid
         return False
     else:
+        # The move is valid
         return True
 
 
@@ -45,7 +47,8 @@ def run(board, links, move, player):
     # 3 = This space is a swamp and therefore blocked too
 
     # Step 1: Check if the move is valid
-    if move_is_not_valid(board, move):
+    if not move_is_valid(board, move):
+        # print("INVALID MOVE")
         return [board, links]
 
     # Step 1.2.1: Check if a new connection is created
