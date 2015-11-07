@@ -5,7 +5,14 @@ import numpy as np
 
 def run(board, links, move, player):
 
-    # Step 1: Look if the action is valid
+    # Board structure:
+        # 1D 576 (24^2) long array containing one of the following numbers:
+        # 0 = Free space
+        # 1 = Player 1 has blocked this space
+        # 2 = Player 2 has blocked this space
+        # 3 = This space is a swamp and therefore blocked too
+
+    # Step 1: Check if the move is valid
     free_spaces = np.empty(24 * 24)
 
     x = 0
@@ -19,6 +26,7 @@ def run(board, links, move, player):
     if move not in free_spaces:
         return False
 
+    # Step 1.2: Check if a new connection is created
     cons = [49, 47, 26, 22, -22, -26, -47, -49]
 
     for con in cons:
@@ -26,6 +34,6 @@ def run(board, links, move, player):
             if board[move+con] == player:
                 print("NEW CONNECTION!")
 
-    # Step 1.2: DO NOT CROSS THE BEAMS ahem LINES
+    # Step 2: DO NOT CROSS THE BEAMS ahem LINES
 
     # Step 2: Check if somebody has won *yay*
