@@ -4,19 +4,25 @@ __author__ = ['Til Blechschmidt', 'Noah Peeters']
 
 import sys, random, math
 from timeit import default_timer as timer
-
 import numpy as np
-
 from numba import jit
 import server
 from clients import AI, Enemy
 
-
-# ---- HELPER FUNCTIONS ----
+# ---- VARIABLE DECLARATIONS ----
 
 SWAMP_BIG = [0, 1, 2, 24, 25, 26, 48, 49, 50]
 SWAMP_SMALL = [0, 1, 24, 25]
 SWAMP_TINY = [0]
+
+round_counter = 0
+boards = None
+links = None
+
+
+# ---- VARIABLE DECLARATIONS END ----
+
+# ---- HELPER FUNCTIONS ----
 
 
 class bcolors:
@@ -37,25 +43,26 @@ def generate_swamp_location(board_size=576):
 
 @jit
 def generate_swamp(size_constant, board):
+
     board_size = len(board)
     valid = False
     swamp_loc = 0
+
+    # Repeat this simulation until a valid location is found
     while not valid:
         swamp_loc = generate_swamp_location(board_size)
         invalid = False
+        # Simulate the swamp and check if it's valid
         for i in size_constant:
-            # print(i, swamp_loc + i)
-            if (swamp_loc + i) >= board_size:
-                # print("OUT OF BOUNDS")
+            # Checking for out-of-bounds, overlapping and clipping with sides (left, right, top, bottom)
+            cur_loc = (swamp_loc + i)
+            if (cur_loc >= board_size) or (board[cur_loc] == 3) or (cur_loc % 24 == 0 or cur_loc % 24 == 23 or cur_loc/24 == 0 or cur_loc/24 == 23):
                 invalid = True
                 break
-            if board[swamp_loc + i] == 3:
-                # print("OVERLAPPING")
-                invalid = True
-                break
-        if not invalid:
-            valid = True
 
+        valid = not invalid  # It's valid if its not invalid :P
+
+    # Generate the swamp
     for i in size_constant:
         board[swamp_loc + i] = 3
 
@@ -76,10 +83,10 @@ def create_new_boards(count, board_size=576):
     board = generate_swamp(SWAMP_TINY, board)
 
     # Generating swamps in the four corners
-    board[0] = 3                            # Top left corner
-    board[board_width-1] = 3                # Top right corner
-    board[board_size - board_width] = 3   # Bottom left corner
-    board[board_size-1] = 3                   # Bottom right corner
+    board[0] = 3  # Top left corner
+    board[board_width - 1] = 3  # Top right corner
+    board[board_size - board_width] = 3  # Bottom left corner
+    board[board_size - 1] = 3  # Bottom right corner
 
     # Multiplying the board with the amount of parallel games and returning it
     return np.tile(board, (count, 1))
@@ -119,15 +126,8 @@ def print_board(board):
             location += 1
         print "|"
 
+
 # ---- HELPER FUNCTIONS END ----
-
-# ---- VARIABLE DECLARATIONS ----
-
-round_counter = 0
-boards = None
-links = None
-
-# ---- VARIABLE DECLARATIONS END ----
 
 
 def reset(game_count, board_size):
@@ -150,7 +150,6 @@ def next_round(gameid):
     boards[gameid], links[gameid] = server.run(boards[gameid], links[gameid], move, 2)
 
     boards[gameid] = rotate_board_anti_clockwise(boards[gameid])
-    print_board(boards[gameid])
     round_counter += 1
 
 
@@ -159,7 +158,7 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1]:
         rounds = int(sys.argv[1])
 
-    reset(rounds + 1, 24*24)
+    reset(rounds + 1, 24 * 24)
 
     times = []
     for i in range(rounds):
@@ -167,12 +166,16 @@ def main():
         next_round(1)
         times.append(timer() - start)
 
+    print_board(boards[1])
+
     total_time = 0
     for i in range(len(times)):
-        print("Round " + str(i + 1) + ": ", times[i]*1000)
+        # print("Round " + str(i + 1) + ": ", times[i] * 1000)
         total_time += times[i]
 
-    print("Total time: ", total_time*1000)
+    print("Total time: " + '\033[1m' + str(total_time * 1000) + " milliseconds" + '\033[0m')
+    print("Average time per round: " + '\033[1m' + str(np.mean(times[1:])*1000*1000) + " microseconds" + '\033[0m')
+
 
 if __name__ == '__main__':
     main()
