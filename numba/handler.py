@@ -63,10 +63,9 @@ def next_round(gameid):
 
 
 def main():
-    if sys.argv[1]:
+    rounds = 10
+    if len(sys.argv) >= 2 and sys.argv[1]:
         rounds = int(sys.argv[1])
-    else:
-        rounds = 10
 
     reset(rounds + 1, 24*24)
 
@@ -77,7 +76,7 @@ def main():
         times.append(timer() - start)
 
     for i in range(len(times)):
-        pass# print("Round " + str(i + 1) + ": ", times[i])
+        print("Round " + str(i + 1) + ": ", times[i])
 
 
 if __name__ == '__main__':
