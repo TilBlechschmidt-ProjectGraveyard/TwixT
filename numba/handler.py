@@ -13,6 +13,7 @@ from numba import jit
 import config as cfg
 import server
 from clients import Enemy
+from config import BOARD_SIZE, BOARD_WIDTH, Field
 
 # ---- VARIABLE DECLARATIONS ----
 
@@ -38,27 +39,26 @@ class bcolors:
 
 
 @jit
-def generate_swamp_location(board_size=576):
+def generate_swamp_location():
     random.seed()
-    return random.randrange(0, board_size, 1)
+    return random.randrange(0, BOARD_SIZE, 1)
 
 
 @jit
 def generate_swamp(size_constant, board):
-    board_size = len(board)
     valid = False
     swamp_loc = 0
 
     # Repeat this simulation until a valid location is found
     while not valid:
-        swamp_loc = generate_swamp_location(board_size)
+        swamp_loc = generate_swamp_location()
         invalid = False
         # Simulate the swamp and check if it's valid
         for i in size_constant:
             # Checking for out-of-bounds, overlapping and clipping with sides (left, right, top, bottom)
             cur_loc = (swamp_loc + i)
-            if (cur_loc >= board_size) or (board[cur_loc] == 3) or (
-                                        cur_loc % 24 == 0 or cur_loc % 24 == 23 or cur_loc / 24 == 0 or cur_loc / 24 == 23):
+            if (cur_loc >= BOARD_SIZE) or (board[cur_loc] == Field.swamp) or (
+                                cur_loc % BOARD_WIDTH == 0 or cur_loc % BOARD_WIDTH == BOARD_WIDTH - 1 or cur_loc / BOARD_WIDTH == 0 or cur_loc / BOARD_WIDTH == BOARD_WIDTH - 1):
                 invalid = True
                 break
 
@@ -66,29 +66,29 @@ def generate_swamp(size_constant, board):
 
     # Generate the swamp
     for i in size_constant:
-        board[swamp_loc + i] = 3
+        board[swamp_loc + i] = Field.swamp
 
     return board
 
 
 @jit
-def create_new_boards(count, board_size=576):
-    board_width = math.sqrt(board_size)
+def create_new_boards(count):
 
     # Initializing the board with zeros
-    board = np.zeros(board_size)
+    board = np.repeat(Field.empty, BOARD_SIZE)
 
     # Generating swamps according to game rules
+    print("TEST1")
     board = generate_swamp(cfg.SWAMP_BIG, board)
     board = generate_swamp(cfg.SWAMP_SMALL, board)
     board = generate_swamp(cfg.SWAMP_SMALL, board)
     board = generate_swamp(cfg.SWAMP_TINY, board)
-
+    print("TEST2")
     # Generating swamps in the four corners
-    board[0] = 3  # Top left corner
-    board[board_width - 1] = 3  # Top right corner
-    board[board_size - board_width] = 3  # Bottom left corner
-    board[board_size - 1] = 3  # Bottom right corner
+    board[0] = Field.swamp  # Top left corner
+    board[BOARD_WIDTH - 1] = Field.swamp  # Top right corner
+    board[BOARD_SIZE - BOARD_WIDTH] = Field.swamp  # Bottom left corner
+    board[BOARD_SIZE - 1] = Field.swamp  # Bottom right corner
 
     # Multiplying the board with the amount of parallel games and returning it
     return np.tile(board, (count, 1))
@@ -132,9 +132,9 @@ def print_board(board):
 # ---- HELPER FUNCTIONS END ----
 
 
-def reset(game_count, board_size):
+def reset(game_count):
     global boards, links
-    b = create_new_boards(game_count, board_size)
+    b = create_new_boards(game_count)
     boards = b
     links = b
 
@@ -160,7 +160,7 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1]:
         rounds = int(sys.argv[1])
 
-    reset(rounds + 1, 24 * 24)
+    reset(rounds + 1)
 
     times = []
     for i in range(rounds):
