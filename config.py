@@ -30,6 +30,6 @@ SWAMP_TINY = gen_swamp_rect(1, 1)
 
 
 def board_coord_to_index(x, y):
-    y * BOARD_WIDTH + x
+    return y * BOARD_WIDTH + x
 
 

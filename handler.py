@@ -6,6 +6,7 @@ import math
 import random
 import sys
 from timeit import default_timer as timer
+import warnings
 
 import numpy as np
 from numba import jit
@@ -38,55 +39,68 @@ class bcolors:
     ENDC = '\033[0m'
 
 
-@jit
+#@jit
 def generate_swamp_location(width, height):
     random.seed()
-    x = random.randrange(1, BOARD_WIDTH - width + 1)
-    y = random.randrange(1, BOARD_WIDTH - height + 1)
+    x = random.randrange(1, BOARD_WIDTH - width)
+    random.seed()
+    y = random.randrange(1, BOARD_WIDTH - height)
     return x, y
 
-def is_rect_free(board, x, y, width, height):
-    pass
 
-@jit
+# whether in the specified rect in the board, all fields are field
+def is_rect_empty(board, x, y, width, height):
+    for x_off in range(width):
+        for y_off in range(height):
+            cur_ind = board_coord_to_index(x + x_off, y + y_off)
+
+            if board[cur_ind] != Field.empty:
+                return False
+    return True
+
+
+#@jit
 def generate_swamp(width, height, board):
     swamp_loc = 0, 0
+    counter = 0
 
     # Repeat this simulation until a valid location is found
     while True:
-        swamp_loc = generate_swamp_location()
-        # whether this swamp touches another
-        touches = True
-        # go through every cell of this swamp
-        for x_off in range(width):
-            for y_off in range(height):
-                cur_loc = swamp_loc[0] + x_off, swamp_loc[0] + y_off
-                cur_ind = board_coord_to_index(cur_loc[0], cur_loc[1])
+        swamp_loc = generate_swamp_location(width, height)
 
-                if board[cur_ind] == Field.swamp:
-                    touches = True
-                    break
+        if is_rect_empty(board, swamp_loc[0], swamp_loc[1], width, height):
+            break
+
+        counter += 1
+
+        if counter == 10:
+            warnings.warn("Swamp generation takes too long")
+
+        if counter == 50:
+            warnings.warn("Couldn't generate swamp.")
+            return board
+
 
     # Generate the swamp
-    for i in swamp_model:
-        board[swamp_loc + i] = Field.swamp
+    for x_off in range(width):
+        for y_off in range(height):
+            board[board_coord_to_index(swamp_loc[0] + x_off, swamp_loc[1] + y_off)] = Field.swamp
 
     return board
 
 
-@jit
+#@jit
 def create_new_boards(count):
 
     # Initializing the board with zeros
     board = np.repeat(Field.empty, BOARD_SIZE)
 
     # Generating swamps according to game rules
-    print("TEST1")
-    board = generate_swamp(cfg.SWAMP_BIG, board)
-    board = generate_swamp(cfg.SWAMP_SMALL, board)
-    board = generate_swamp(cfg.SWAMP_SMALL, board)
-    board = generate_swamp(cfg.SWAMP_TINY, board)
-    print("TEST2")
+    board = generate_swamp(3, 3, board)
+    board = generate_swamp(2, 2, board)
+    board = generate_swamp(2, 2, board)
+    board = generate_swamp(1, 1, board)
+
     # Generating swamps in the four corners
     board[0] = Field.swamp  # Top left corner
     board[BOARD_WIDTH - 1] = Field.swamp  # Top right corner
@@ -112,20 +126,18 @@ def print_board(board):
     for row in range(board_width):
         print "|",
         for field in range(board_width):
-            cur_loc = int(board[location])
+            cur_loc = board[location]
             if (field == 0 or field == 23 or row == 0 or row == 23) and cur_loc == Field.empty:
                 if row == 0 or row == 23:
-                    print bcolors.BASE_BLUE + str(cur_loc) + bcolors.ENDC,
+                    print bcolors.BASE_BLUE + '0' + bcolors.ENDC,
                 else:
-                    print bcolors.BASE_RED + str(cur_loc) + bcolors.ENDC,
+                    print bcolors.BASE_RED + '0' + bcolors.ENDC,
             elif cur_loc == Field.p1:
-                print bcolors.RED + str(cur_loc) + bcolors.ENDC,
+                print bcolors.RED + '1' + bcolors.ENDC,
             elif cur_loc == Field.p2:
-                print bcolors.BLUE + str(cur_loc) + bcolors.ENDC,
+                print bcolors.BLUE + '2' + bcolors.ENDC,
             elif cur_loc == Field.swamp:
-                print bcolors.SWAMP + str(cur_loc) + bcolors.ENDC,
-            elif cur_loc == 4:
-                print bcolors.WHITE + str(cur_loc) + bcolors.ENDC,
+                print bcolors.SWAMP + '3' + bcolors.ENDC,
             else:
                 print "-",
             location += 1
