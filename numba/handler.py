@@ -10,14 +10,12 @@ from timeit import default_timer as timer
 import numpy as np
 from numba import jit
 
+import config as cfg
 import server
 from clients import Enemy
 
 # ---- VARIABLE DECLARATIONS ----
 
-SWAMP_BIG = [0, 1, 2, 24, 25, 26, 48, 49, 50]
-SWAMP_SMALL = [0, 1, 24, 25]
-SWAMP_TINY = [0]
 
 round_counter = 0
 boards = None
@@ -81,10 +79,10 @@ def create_new_boards(count, board_size=576):
     board = np.zeros(board_size)
 
     # Generating swamps according to game rules
-    board = generate_swamp(SWAMP_BIG, board)
-    board = generate_swamp(SWAMP_SMALL, board)
-    board = generate_swamp(SWAMP_SMALL, board)
-    board = generate_swamp(SWAMP_TINY, board)
+    board = generate_swamp(cfg.SWAMP_BIG, board)
+    board = generate_swamp(cfg.SWAMP_SMALL, board)
+    board = generate_swamp(cfg.SWAMP_SMALL, board)
+    board = generate_swamp(cfg.SWAMP_TINY, board)
 
     # Generating swamps in the four corners
     board[0] = 3  # Top left corner

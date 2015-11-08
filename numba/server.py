@@ -1,6 +1,5 @@
 __author__ = ['Til Blechschmidt', 'Noah Peeters']
 
-import numpy as np
 from numba import jit
 
 
