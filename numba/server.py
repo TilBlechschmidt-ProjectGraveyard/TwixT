@@ -15,26 +15,9 @@ def value_in_array(value, array):
     return result
 
 
-@jit(nopython=True)
+@jit
 def move_is_valid(board, move):
-    free_spaces = np.zeros(528)
-    x = 0
-    for i in range(len(board)):
-        # Check for enemy 'base'
-        if i < 24 or i > (24 * 24 - 24):
-            continue
-        elif board[i] == 0:
-            free_spaces[x] = i
-            x += 1
-
-    free_spaces = free_spaces[:x]
-
-    if not value_in_array(move, free_spaces):
-        # The move is invalid
-        return False
-    else:
-        # The move is valid
-        return True
+    return 24 <= move <= 24 * 24 - 24 and board[move] == 0
 
 
 @jit
