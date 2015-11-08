@@ -1,20 +1,14 @@
+__author__ = ['Til Blechschmidt', 'Merlin Brandt']
+
 import numpy as np
-from enum import Enum
 
 BOARD_WIDTH = 24
 BOARD_SIZE = BOARD_WIDTH ** 2
 
-
-class Player(Enum):
-    one = 1
-    two = 2
-
-
-class Field(Enum):
-    empty = 0
-    p1 = Player.one
-    p2 = Player.two
-    swamp = 3
+FIELD_EMPTY = 0
+FIELD_P1 = 1
+FIELD_P2 = 2
+FIELD_SWAMP = 3
 
 
 def gen_swamp_rect(w, h):

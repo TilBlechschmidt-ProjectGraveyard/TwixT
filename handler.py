@@ -1,20 +1,19 @@
 # -*- coding: latin-1 -*-
 
-__author__ = ['Til Blechschmidt', 'Noah Peeters']
+__author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
 
 import math
 import random
 import sys
-from timeit import default_timer as timer
 import warnings
+from timeit import default_timer as timer
 
 import numpy as np
 from numba import jit
 
-import config as cfg
 import server
 from clients import Enemy
-from config import BOARD_SIZE, BOARD_WIDTH, Field, Player, board_coord_to_index
+from config import BOARD_SIZE, BOARD_WIDTH, FIELD_EMPTY, FIELD_SWAMP, FIELD_P1, FIELD_P2, board_coord_to_index
 
 # ---- VARIABLE DECLARATIONS ----
 
@@ -39,7 +38,7 @@ class bcolors:
     ENDC = '\033[0m'
 
 
-#@jit
+@jit
 def generate_swamp_location(width, height):
     random.seed()
     x = random.randrange(1, BOARD_WIDTH - width)
@@ -54,12 +53,12 @@ def is_rect_empty(board, x, y, width, height):
         for y_off in range(height):
             cur_ind = board_coord_to_index(x + x_off, y + y_off)
 
-            if board[cur_ind] != Field.empty:
+            if board[cur_ind] != FIELD_EMPTY:
                 return False
     return True
 
 
-#@jit
+@jit
 def generate_swamp(width, height, board):
     swamp_loc = 0, 0
     counter = 0
@@ -80,20 +79,18 @@ def generate_swamp(width, height, board):
             warnings.warn("Couldn't generate swamp.")
             return board
 
-
     # Generate the swamp
     for x_off in range(width):
         for y_off in range(height):
-            board[board_coord_to_index(swamp_loc[0] + x_off, swamp_loc[1] + y_off)] = Field.swamp
+            board[board_coord_to_index(swamp_loc[0] + x_off, swamp_loc[1] + y_off)] = FIELD_SWAMP
 
     return board
 
 
-#@jit
+@jit
 def create_new_boards(count):
-
     # Initializing the board with zeros
-    board = np.repeat(Field.empty, BOARD_SIZE)
+    board = np.repeat(FIELD_EMPTY, BOARD_SIZE)
 
     # Generating swamps according to game rules
     board = generate_swamp(3, 3, board)
@@ -102,10 +99,10 @@ def create_new_boards(count):
     board = generate_swamp(1, 1, board)
 
     # Generating swamps in the four corners
-    board[0] = Field.swamp  # Top left corner
-    board[BOARD_WIDTH - 1] = Field.swamp  # Top right corner
-    board[BOARD_SIZE - BOARD_WIDTH] = Field.swamp  # Bottom left corner
-    board[BOARD_SIZE - 1] = Field.swamp  # Bottom right corner
+    board[0] = FIELD_SWAMP  # Top left corner
+    board[BOARD_WIDTH - 1] = FIELD_SWAMP  # Top right corner
+    board[BOARD_SIZE - BOARD_WIDTH] = FIELD_SWAMP  # Bottom left corner
+    board[BOARD_SIZE - 1] = FIELD_SWAMP  # Bottom right corner
 
     # Multiplying the board with the amount of parallel games and returning it
     return np.tile(board, (count, 1))
@@ -127,16 +124,16 @@ def print_board(board):
         print "|",
         for field in range(board_width):
             cur_loc = board[location]
-            if (field == 0 or field == 23 or row == 0 or row == 23) and cur_loc == Field.empty:
+            if (field == 0 or field == 23 or row == 0 or row == 23) and cur_loc == FIELD_EMPTY:
                 if row == 0 or row == 23:
                     print bcolors.BASE_BLUE + '0' + bcolors.ENDC,
                 else:
                     print bcolors.BASE_RED + '0' + bcolors.ENDC,
-            elif cur_loc == Field.p1:
+            elif cur_loc == FIELD_P1:
                 print bcolors.RED + '1' + bcolors.ENDC,
-            elif cur_loc == Field.p2:
+            elif cur_loc == FIELD_P2:
                 print bcolors.BLUE + '2' + bcolors.ENDC,
-            elif cur_loc == Field.swamp:
+            elif cur_loc == FIELD_SWAMP:
                 print bcolors.SWAMP + '3' + bcolors.ENDC,
             else:
                 print "-",
@@ -158,13 +155,13 @@ def next_round(game_id):
     global round_counter
 
     move = Enemy.run(boards[game_id])
-    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, Player.one)
+    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, 1)
 
     boards[game_id] = rotate_board_clockwise(boards[game_id])
 
     # move = AI.run(boards[gameid])
     move = Enemy.run(boards[game_id])
-    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, Player.two)
+    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, 2)
 
     boards[game_id] = rotate_board_anti_clockwise(boards[game_id])
     round_counter += 1

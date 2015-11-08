@@ -1,4 +1,4 @@
-__author__ = ['Til Blechschmidt', 'Noah Peeters']
+__author__ = ['Noah Peeters']
 
 import random
 
