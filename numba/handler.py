@@ -13,7 +13,7 @@ from numba import jit
 import config as cfg
 import server
 from clients import Enemy
-from config import BOARD_SIZE, BOARD_WIDTH, Field
+from config import BOARD_SIZE, BOARD_WIDTH, Field, board_coord_to_index
 
 # ---- VARIABLE DECLARATIONS ----
 
@@ -39,33 +39,36 @@ class bcolors:
 
 
 @jit
-def generate_swamp_location():
+def generate_swamp_location(width, height):
     random.seed()
-    return random.randrange(0, BOARD_SIZE, 1)
+    x = random.randrange(1, BOARD_WIDTH - width + 1)
+    y = random.randrange(1, BOARD_WIDTH - height + 1)
+    return x, y
 
+def is_rect_free(board, x, y, width, height):
+    pass
 
 @jit
-def generate_swamp(size_constant, board):
-    valid = False
-    swamp_loc = 0
+def generate_swamp(width, height, board):
+    swamp_loc = 0, 0
 
     # Repeat this simulation until a valid location is found
-    while not valid:
+    while True:
         swamp_loc = generate_swamp_location()
-        invalid = False
-        # Simulate the swamp and check if it's valid
-        for i in size_constant:
-            # Checking for out-of-bounds, overlapping and clipping with sides (left, right, top, bottom)
-            cur_loc = (swamp_loc + i)
-            if (cur_loc >= BOARD_SIZE) or (board[cur_loc] == Field.swamp) or (
-                                cur_loc % BOARD_WIDTH == 0 or cur_loc % BOARD_WIDTH == BOARD_WIDTH - 1 or cur_loc / BOARD_WIDTH == 0 or cur_loc / BOARD_WIDTH == BOARD_WIDTH - 1):
-                invalid = True
-                break
+        # whether this swamp touches another
+        touches = True
+        # go through every cell of this swamp
+        for x_off in range(width):
+            for y_off in range(height):
+                cur_loc = swamp_loc[0] + x_off, swamp_loc[0] + y_off
+                cur_ind = board_coord_to_index(cur_loc[0], cur_loc[1])
 
-        valid = not invalid  # It's valid if its not invalid :P
+                if board[cur_ind] == Field.swamp:
+                    touches = True
+                    break
 
     # Generate the swamp
-    for i in size_constant:
+    for i in swamp_model:
         board[swamp_loc + i] = Field.swamp
 
     return board

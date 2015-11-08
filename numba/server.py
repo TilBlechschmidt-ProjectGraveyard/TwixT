@@ -1,5 +1,6 @@
 __author__ = ['Til Blechschmidt', 'Noah Peeters']
 
+from config import BOARD_SIZE, BOARD_WIDTH
 from numba import jit
 
 
@@ -16,7 +17,7 @@ def value_in_array(value, array):
 
 @jit
 def move_is_valid(board, move):
-    return 24 <= move <= 24 * 24 - 24 and board[move] == 0
+    return BOARD_WIDTH <= move <= BOARD_SIZE - BOARD_WIDTH and board[move] == 0
 
 
 @jit
