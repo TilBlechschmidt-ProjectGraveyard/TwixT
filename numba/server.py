@@ -63,7 +63,9 @@ def run(board, links, move, player):
 
     # Step 1.2.3: Set the connection
 
-    # Step 2: Check if somebody has won *yay*
+    # Step 2.1: Calculate the score
+
+    # Step 2.2: Check if somebody has won *yay*
 
     # Step 3: Apply the move
     board[move] = player
