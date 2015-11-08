@@ -10,7 +10,7 @@ from config import BOARD_SIZE, BOARD_WIDTH, FIELD_EMPTY
 
 @jit(nopython=True)
 def run(board):
-    free_spaces = np.zeros(BOARD_SIZE)
+    free_spaces = np.zeros(BOARD_SIZE, dtype=np.uint16)
     amount = 0
 
     for i in range(BOARD_WIDTH - 1, BOARD_SIZE - BOARD_WIDTH):

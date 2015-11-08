@@ -47,13 +47,10 @@ def run(board, links, move, player):
     for con in cons:
         if move + con < BOARD_SIZE:
             if board[move + con] == player:
-                pass  # print("NEW CONNECTION!")
-
-    # Step 1.2.2: DO NOT CROSS THE BEAMS ahem LINES
-
-    # Step 1.2.3: Set the connection
-
-    # Step 2.1: Calculate the score
+                # Step 1.2.2: DO NOT CROSS THE BEAMS ahem LINES
+                # Step 1.2.3: Set the connection
+                # Step 2.1: Calculate the score
+                pass
 
     # Step 2.2: Check if somebody has won *yay*
 
@@ -61,4 +58,4 @@ def run(board, links, move, player):
     board[move] = player
 
     # Step 4: Return the board
-    return [board, links]
+    return board, links

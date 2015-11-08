@@ -15,15 +15,6 @@ import server
 from clients import Enemy
 from config import BOARD_SIZE, BOARD_WIDTH, FIELD_EMPTY, FIELD_SWAMP, FIELD_P1, FIELD_P2, board_coord_to_index
 
-# ---- VARIABLE DECLARATIONS ----
-
-
-round_counter = 0
-boards = None
-links = None
-
-
-# ---- VARIABLE DECLARATIONS END ----
 
 # ---- HELPER FUNCTIONS ----
 
@@ -145,43 +136,43 @@ def print_board(board):
 # ---- HELPER FUNCTIONS END ----
 
 
+@jit
 def reset(game_count):
-    global boards, links
     b = create_new_boards(game_count)
-    boards = b
-    links = b
+    l = np.tile(np.zeros(BOARD_SIZE), (game_count, 1))
+    return b, l
 
 
-def next_round(game_id):
-    global round_counter
+def next_round(board_array, link_array):
+    move = Enemy.run(board_array)
+    board_array, link_array = server.run(board_array, link_array, move, 1)
 
-    move = Enemy.run(boards[game_id])
-    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, 1)
+    board_array = rotate_board_clockwise(board_array)
 
-    boards[game_id] = rotate_board_clockwise(boards[game_id])
+    # move = AI.run(board_array)
+    move = Enemy.run(board_array)
+    board_array, link_array = server.run(board_array, link_array, move, 2)
 
-    # move = AI.run(boards[gameid])
-    move = Enemy.run(boards[game_id])
-    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, 2)
+    board_array = rotate_board_anti_clockwise(board_array)
 
-    boards[game_id] = rotate_board_anti_clockwise(boards[game_id])
-    round_counter += 1
+    return board_array, link_array
 
 
 def main():
-    rounds = 30
+    parallel_games = 1
+    rounds = 1
     if len(sys.argv) >= 2 and sys.argv[1]:
         rounds = int(sys.argv[1])
 
-    reset(rounds + 1)
+    boards, links = reset(parallel_games)
 
     times = []
-    for i in range(rounds):
-        start = timer()
-        next_round(1)
-        times.append(timer() - start)
-
-    print_board(boards[1])
+    for game_id in range(parallel_games):
+        for i in range(rounds):
+            start = timer()
+            boards[game_id], links[game_id] = next_round(boards[game_id], links[game_id])
+            times.append(timer() - start)
+        print_board(boards[game_id])
 
     total_time = 0
     for i in range(len(times)):
