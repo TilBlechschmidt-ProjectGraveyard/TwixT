@@ -160,7 +160,7 @@ def next_round(board_array, link_array):
 
 def main():
     parallel_games = 1
-    rounds = 1
+    rounds = 30
     if len(sys.argv) >= 2 and sys.argv[1]:
         rounds = int(sys.argv[1])
 
