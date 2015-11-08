@@ -5,6 +5,9 @@ from numba import jit
 from config import BOARD_SIZE, BOARD_WIDTH
 
 
+# from boardlocation import BoardLocation
+
+
 @jit(nopython=True)
 def value_in_array(value, array):
     result = False
@@ -16,6 +19,16 @@ def value_in_array(value, array):
     return result
 
 
+# returns whether the location is on the base
+# def is_loc_on_base(loc, is_base_hori):
+#    component = 1 if is_base_hori else 0
+#    return loc.xy[component] == 0 or loc.xy[component] == BOARD_WIDTH - 1
+# @jit
+# def move_is_valid(board, move, is_player_hori):
+#    is_enemy_hori = not is_player_hori
+#    return not is_loc_on_base(move, is_enemy_hori) and board[move.index] == 0
+
+
 @jit
 def move_is_valid(board, move):
     return BOARD_WIDTH <= move <= BOARD_SIZE - BOARD_WIDTH and board[move] == 0
@@ -23,13 +36,6 @@ def move_is_valid(board, move):
 
 @jit
 def run(board, links, move, player):
-    # Board structure:
-    # A one-dimensional 576 long array containing one of the following numbers:
-    # 0 = Free space
-    # 1 = Player 1 has blocked this space
-    # 2 = Player 2 has blocked this space
-    # 3 = This space is a swamp and therefore blocked too
-
     # Step 1: Check if the move is valid
     if not move_is_valid(board, move):
         # print("INVALID MOVE")
@@ -39,7 +45,7 @@ def run(board, links, move, player):
     cons = [49, 47, 26, 22, -22, -26, -47, -49]
 
     for con in cons:
-        if move + con < 24 * 24:
+        if move + con < BOARD_SIZE:
             if board[move + con] == player:
                 pass  # print("NEW CONNECTION!")
 

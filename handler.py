@@ -48,6 +48,7 @@ def generate_swamp_location(width, height):
 
 
 # whether in the specified rect in the board, all fields are field
+@jit
 def is_rect_empty(board, x, y, width, height):
     for x_off in range(width):
         for y_off in range(height):
