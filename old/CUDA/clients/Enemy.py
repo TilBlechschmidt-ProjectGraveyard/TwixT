@@ -1,10 +1,10 @@
 __author__ = 'TheMegaTB'
 
-from numba import cuda
-import numpy as np
 import random
+
 import numpy
-import numbapro
+from numba import cuda
+
 
 @cuda.jit
 def run(d_boards, d_links, d_actions):

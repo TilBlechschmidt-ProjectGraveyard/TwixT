@@ -1,21 +1,18 @@
 __author__ = ['Til Blechschmidt', 'Noah Peeters']
 
 import random as rnd
-
+# from ..config import BOARD_SIZE, BOARD_WIDTH, Field
 import numpy as np
 from numba import jit
 
 
 @jit(nopython=True)
 def run(board):
-    free_spaces = np.zeros(528)
+    free_spaces = np.zeros(BOARD_SIZE)
     x = 0
 
-    for i in range(len(board)):
-        # Check for enemy 'base'
-        if i < 24 or i > (24 * 24 - 24):
-            continue
-        elif board[i] == 0:
+    for i in range(BOARD_WIDTH - 1, BOARD_SIZE - BOARD_WIDTH):
+        if board[i] == Field.empty:
             free_spaces[x] = i
             x += 1
 

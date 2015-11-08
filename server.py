@@ -1,7 +1,8 @@
 __author__ = ['Til Blechschmidt', 'Noah Peeters']
 
-from config import BOARD_SIZE, BOARD_WIDTH
 from numba import jit
+
+from config import BOARD_SIZE, BOARD_WIDTH
 
 
 @jit(nopython=True)

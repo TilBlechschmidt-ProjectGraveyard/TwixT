@@ -1,6 +1,7 @@
 __author__ = 'Noah'
 
-import random, copy
+import copy
+import random
 
 operations = [ADD, SUB] = [0, 1]
 KIND, VALUE, INPUTS, TARGETS = 0, 1, 2, 3

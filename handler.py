@@ -13,7 +13,7 @@ from numba import jit
 import config as cfg
 import server
 from clients import Enemy
-from config import BOARD_SIZE, BOARD_WIDTH, Field, board_coord_to_index
+from config import BOARD_SIZE, BOARD_WIDTH, Field, Player, board_coord_to_index
 
 # ---- VARIABLE DECLARATIONS ----
 
@@ -99,7 +99,7 @@ def create_new_boards(count):
 
 @jit
 def rotate_board_anti_clockwise(board, times=1):
-    return np.append([], np.rot90(np.reshape(board, (24, 24)), times))
+    return np.append([], np.rot90(np.reshape(board, (BOARD_WIDTH, BOARD_WIDTH)), times))
 
 
 def rotate_board_clockwise(board, times=1):
@@ -113,16 +113,16 @@ def print_board(board):
         print "|",
         for field in range(board_width):
             cur_loc = int(board[location])
-            if (field == 0 or field == 23 or row == 0 or row == 23) and cur_loc == 0:
+            if (field == 0 or field == 23 or row == 0 or row == 23) and cur_loc == Field.empty:
                 if row == 0 or row == 23:
                     print bcolors.BASE_BLUE + str(cur_loc) + bcolors.ENDC,
                 else:
                     print bcolors.BASE_RED + str(cur_loc) + bcolors.ENDC,
-            elif cur_loc == 1:
+            elif cur_loc == Field.p1:
                 print bcolors.RED + str(cur_loc) + bcolors.ENDC,
-            elif cur_loc == 2:
+            elif cur_loc == Field.p2:
                 print bcolors.BLUE + str(cur_loc) + bcolors.ENDC,
-            elif cur_loc == 3:
+            elif cur_loc == Field.swamp:
                 print bcolors.SWAMP + str(cur_loc) + bcolors.ENDC,
             elif cur_loc == 4:
                 print bcolors.WHITE + str(cur_loc) + bcolors.ENDC,
@@ -146,13 +146,13 @@ def next_round(game_id):
     global round_counter
 
     move = Enemy.run(boards[game_id])
-    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, 1)
+    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, Player.one)
 
     boards[game_id] = rotate_board_clockwise(boards[game_id])
 
     # move = AI.run(boards[gameid])
     move = Enemy.run(boards[game_id])
-    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, 2)
+    boards[game_id], links[game_id] = server.run(boards[game_id], links[game_id], move, Player.two)
 
     boards[game_id] = rotate_board_anti_clockwise(boards[game_id])
     round_counter += 1

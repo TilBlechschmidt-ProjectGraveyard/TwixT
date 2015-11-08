@@ -1,9 +1,9 @@
 __author__ = 'TheMegaTB'
 
-import sys
-import re
-import random
 import copy
+import random
+import re
+import sys
 from timeit import default_timer as timer
 
 import numpy as np
