@@ -9,13 +9,12 @@ from numba import jit
 import helpers
 import server
 from clients import Enemy
-from config import BOARD_SIZE
 
 
 @jit
 def reset(game_count):
     b = helpers.create_new_boards(game_count)
-    l = np.tile(np.zeros(BOARD_SIZE), (game_count, 1))
+    l = helpers.create_new_links(game_count)
     return b, l
 
 
