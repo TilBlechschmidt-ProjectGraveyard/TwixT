@@ -88,3 +88,9 @@ def create_new_boards(count):
 
     # Multiplying the board with the amount of parallel games and returning it
     return np.tile(board, (count, 1))
+
+
+@jit
+def create_new_links(count):
+    # Consult http://www.johannes-schwagereit.de/twixtProgramming/ to get to know where the 4 comes from :P
+    return np.zeros((count, BOARD_SIZE, 4))
