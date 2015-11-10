@@ -100,13 +100,19 @@ def create_new_boards(count):
     return np.tile(board, (count, 1))
 
 
+@jit(nopython=True)
+def rotate_board(b):
+    return b.reshape((BOARD_WIDTH, BOARD_WIDTH)).T
+
+
 @jit
-def rotate_board_anti_clockwise(board, times=1):
-    return np.append([], np.rot90(np.reshape(board, (BOARD_WIDTH, BOARD_WIDTH)), times))
+def rotate_board_clockwise(board):
+    return np.fliplr(rotate_board(board)).flatten()
 
 
-def rotate_board_clockwise(board, times=1):
-    return rotate_board_anti_clockwise(board, -times)
+@jit
+def rotate_board_anti_clockwise(board):
+    return np.flipud(rotate_board(board)).flatten()
 
 
 def print_board(board):
@@ -159,7 +165,7 @@ def next_round(board_array, link_array):
 
 
 def main():
-    parallel_games = 1
+    parallel_games = 10000
     rounds = 30
     if len(sys.argv) >= 2 and sys.argv[1]:
         rounds = int(sys.argv[1])
@@ -172,7 +178,7 @@ def main():
             start = timer()
             boards[game_id], links[game_id] = next_round(boards[game_id], links[game_id])
             times.append(timer() - start)
-        print_board(boards[game_id])
+            # print_board(boards[game_id])
 
     total_time = 0
     for i in range(len(times)):
