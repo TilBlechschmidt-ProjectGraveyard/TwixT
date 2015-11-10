@@ -19,16 +19,6 @@ def value_in_array(value, array):
     return result
 
 
-# returns whether the location is on the base
-# def is_loc_on_base(loc, is_base_hori):
-#    component = 1 if is_base_hori else 0
-#    return loc.xy[component] == 0 or loc.xy[component] == BOARD_WIDTH - 1
-# @jit
-# def move_is_valid(board, move, is_player_hori):
-#    is_enemy_hori = not is_player_hori
-#    return not is_loc_on_base(move, is_enemy_hori) and board[move.index] == 0
-
-
 @jit
 def move_is_valid(board, move):
     return BOARD_WIDTH <= move <= BOARD_SIZE - BOARD_WIDTH and board[move] == 0
