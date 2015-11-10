@@ -52,7 +52,6 @@ def main():
     total_time = 0
     for i in range(len(times)):
         total_time += times[i]
-        # print("Round " + str(i + 1) + ": ", times[i] * 1000)
 
     print("Total time: " + '\033[1m' + str(total_time * 1000) + " milliseconds" + '\033[0m')
     print("Average time per round: " + '\033[1m' + str(np.mean(times[1:]) * 1000 * 1000) + " microseconds" + '\033[0m')
