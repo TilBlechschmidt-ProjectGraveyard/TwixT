@@ -1,5 +1,3 @@
-__author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
-
 import sys
 from timeit import default_timer as timer
 
@@ -8,7 +6,9 @@ from numba import jit
 
 import helpers
 import server
-from clients import Enemy
+import clients
+
+__author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
 
 
 @jit
@@ -19,13 +19,13 @@ def reset(game_count):
 
 
 def next_round(board_array, link_array):
-    move = Enemy.run(board_array)
+    move = clients.Enemy.run(board_array)
     board_array, link_array = server.run(board_array, link_array, move, 1)
 
     board_array = helpers.rotate_board_clockwise(board_array)
 
     # move = AI.run(board_array)
-    move = Enemy.run(board_array)
+    move = clients.Enemy.run(board_array)
     board_array, link_array = server.run(board_array, link_array, move, 2)
 
     board_array = helpers.rotate_board_anti_clockwise(board_array)
@@ -51,8 +51,8 @@ def main():
 
     total_time = 0
     for i in range(len(times)):
-        # print("Round " + str(i + 1) + ": ", times[i] * 1000)
         total_time += times[i]
+        # print("Round " + str(i + 1) + ": ", times[i] * 1000)
 
     print("Total time: " + '\033[1m' + str(total_time * 1000) + " milliseconds" + '\033[0m')
     print("Average time per round: " + '\033[1m' + str(np.mean(times[1:]) * 1000 * 1000) + " microseconds" + '\033[0m')

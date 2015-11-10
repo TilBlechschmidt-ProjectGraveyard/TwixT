@@ -1,6 +1,6 @@
-__author__ = ['Noah Peeters']
-
 import random
+
+__author__ = ['Noah Peeters']
 
 
 class Node:

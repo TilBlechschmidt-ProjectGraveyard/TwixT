@@ -1,11 +1,11 @@
-__author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
-
 import random as rnd
 
 import numpy as np
 from numba import jit
 
 from config import BOARD_SIZE, BOARD_WIDTH, FIELD_EMPTY
+
+__author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
 
 
 @jit(nopython=True)

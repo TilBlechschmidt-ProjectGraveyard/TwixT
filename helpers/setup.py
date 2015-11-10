@@ -1,5 +1,3 @@
-__author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
-
 import random as rnd
 import warnings
 
@@ -7,6 +5,8 @@ import numpy as np
 from numba import jit
 
 from config import BOARD_SIZE, BOARD_WIDTH, FIELD_EMPTY, FIELD_SWAMP, board_coord_to_index
+
+__author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
 
 
 class bcolors:

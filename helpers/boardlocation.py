@@ -1,5 +1,6 @@
 from config import BOARD_WIDTH
 
+
 # Wrapper around a board location that can either store an index or components
 class BoardLocation(object):
 
