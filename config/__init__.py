@@ -3,6 +3,9 @@ import numpy as np
 from numba import jit
 
 
+BOARD_SIZE = BOARD_WIDTH ** 2
+
+
 @jit
 def gen_swamp_rect(w, h):
     swamp = np.zeros(w * h)
