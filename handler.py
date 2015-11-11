@@ -1,10 +1,9 @@
 import sys
 from timeit import default_timer as timer
-
 import numpy as np
 from numba import jit
-
-import helpers
+import config
+import helpers as h
 import server
 import clients
 
@@ -13,24 +12,25 @@ __author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
 
 @jit
 def reset(game_count):
-    b = helpers.create_new_boards(game_count)
-    l = helpers.create_new_links(game_count)
-    return b, l
+    b = h.create_new_boards(game_count)
+    l = h.create_new_links(game_count)
+    s = np.zeros((game_count, 2))  # 2 = Amount of player's
+    return b, l, s
 
 
-def next_round(board_array, link_array):
-    move = clients.Enemy.run(board_array)
-    board_array, link_array = server.run(board_array, link_array, move, 1)
+def next_round(board, links, scores):
+    move = clients.Enemy.run(board)
+    board, links, scores[0], won = server.run(board, links, scores[0], move, 1)
 
-    board_array = helpers.rotate_board_clockwise(board_array)
+    board = h.rotate_board_clockwise(board)
 
-    # move = AI.run(board_array)
-    move = clients.Enemy.run(board_array)
-    board_array, link_array = server.run(board_array, link_array, move, 2)
+    # move = AI.run(board)
+    move = clients.Enemy.run(board)
+    board, links, scores[1], won = server.run(board, links, scores[1], move, 2)
 
-    board_array = helpers.rotate_board_anti_clockwise(board_array)
+    board = h.rotate_board_anti_clockwise(board)
 
-    return board_array, link_array
+    return board, links, scores, won
 
 
 def main():
@@ -39,23 +39,47 @@ def main():
     if len(sys.argv) >= 2 and sys.argv[1]:
         rounds = int(sys.argv[1])
 
-    boards, links = reset(parallel_games)
+    boards, links, scores = reset(parallel_games)
 
     times = []
-    for game_id in range(parallel_games):
+    finished_games = np.zeros(parallel_games, dtype=bool)
+    for gid in range(parallel_games):
         for i in range(rounds):
-            start = timer()
-            boards[game_id], links[game_id] = next_round(boards[game_id], links[game_id])
-            times.append(timer() - start)
-        helpers.print_board(boards[game_id])
+            if not finished_games[gid]:
+                start = timer()
+                boards[gid], links[gid], scores[gid], finished_games[gid] \
+                    = next_round(boards[gid], links[gid], scores[gid])
+                times.append(timer() - start)
+        if config.PRINT_BOARDS and parallel_games < config.PRINT_THRESHOLD:
+            h.print_board(boards[gid])
 
+    times = times[1:]  # Exclude the first round to prevent the time the JIT compilation takes to falsify the stats
     total_time = 0
     for i in range(len(times)):
         total_time += times[i]
 
-    print("Total time: " + '\033[1m' + str(total_time * 1000) + " milliseconds" + '\033[0m')
-    print("Average time per round: " + '\033[1m' + str(np.mean(times[1:]) * 1000 * 1000) + " microseconds" + '\033[0m')
+    # ------------------------------------------------- STATS PRINTING -------------------------------------------------
 
+    stats_header = "Simulated " + h.bold(str(parallel_games)) + " games with a total of " + h.bold(
+        str(parallel_games * rounds)) + " rounds."
+
+    spaces = " " * int((107 - len(stats_header)) / 1.5)
+    stats_header = spaces + stats_header + spaces
+
+    print('\n' * 2)
+
+    print(stats_header)
+
+    print("-----------------------------------------------------------------------------------------------------------")
+
+    print("Total time: " + '\033[1m' + str(total_time * 1000) + " milliseconds" + '\033[0m')
+    print("Average time per round: " + '\033[1m' + str(np.mean(times) * 1000 * 1000) + " microseconds" + '\033[0m')
+    print("-----------------------------------------------------------------------------------------------------------")
+    print("                  (All times exclude the first round to compensate for the JIT compiler)")
+
+    print('\n' * 2)
+
+    # ----------------------------------------------- STATS PRINTING END -----------------------------------------------
 
 if __name__ == '__main__':
     main()
