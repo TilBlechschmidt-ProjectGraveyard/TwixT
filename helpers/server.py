@@ -73,7 +73,12 @@ def set_link(direction, loc, links):
 
 
 @jit(nopython=True)
-def check_link_possibility(links, board, loc, player):
+def calculate_score(links, board, player, score):
+    pass
+
+
+@jit(nopython=True)
+def check_link_possibility(links, board, loc, player, score):
     # TODO: Make this fancier (if possible)
     link_set = False
     if board[loc - 2 - BOARD_WIDTH] == player:
@@ -106,7 +111,4 @@ def check_link_possibility(links, board, loc, player):
         links = set_link(3, dest, links)
         link_set = True
 
-    if link_set:
-        pass  # print "Some links got created! (gotta update the score right here...not)"
-
-    return links
+    return links, link_set
