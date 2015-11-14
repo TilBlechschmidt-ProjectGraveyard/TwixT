@@ -1,11 +1,13 @@
 import sys
 from timeit import default_timer as timer
+
 import numpy as np
 from numba import jit
+
+import clients
 import config
 import helpers as h
 import server
-import clients
 
 __author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
 
@@ -35,7 +37,7 @@ def next_round(board, links, scores):
 
 def main():
     parallel_games = 1
-    rounds = 30
+    rounds = 1
     if len(sys.argv) >= 2 and sys.argv[1]:
         rounds = int(sys.argv[1])
 
