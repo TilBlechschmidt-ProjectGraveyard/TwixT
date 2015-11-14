@@ -14,6 +14,7 @@ FIELD_P1 = 1
 FIELD_P2 = 2
 FIELD_SWAMP = 3
 
-# Whether to print boards or not and the threshold where it should stop printing
+# Whether to print boards and stats or not and the threshold (amount of games) where it should stop printing
+PRINT_STATS = False
 PRINT_BOARDS = True
 PRINT_THRESHOLD = 100

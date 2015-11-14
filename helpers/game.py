@@ -22,12 +22,22 @@ def rotate_board_anti_clockwise(board):
     return np.flipud(rotate_board(board)).flatten()
 
 
+@jit
+def get_value(board, move):
+    return board[move[0]][move[1]]
+
+
+@jit
+def set_value(board, move, value):
+    board[move[0]][move[1]] = value
+    return board
+
+
 def print_board(board):
-    location = 0
     for row in range(BOARD_WIDTH):
         print "|",
         for field in range(BOARD_WIDTH):
-            cur_loc = board[location]
+            cur_loc = board[row][field]
             if (field == 0 or field == 23 or row == 0 or row == 23) and cur_loc == FIELD_EMPTY:
                 if row == 0 or row == 23:
                     print bcolors.BASE_BLUE + '0' + bcolors.ENDC,
@@ -41,7 +51,6 @@ def print_board(board):
                 print bcolors.SWAMP + '3' + bcolors.ENDC,
             else:
                 print "-",
-            location += 1
         print "|"
 
 

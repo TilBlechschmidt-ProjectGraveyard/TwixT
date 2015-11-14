@@ -4,14 +4,14 @@ import warnings
 import numpy as np
 from numba import jit
 
-from config import BOARD_SIZE, BOARD_WIDTH, FIELD_EMPTY, FIELD_SWAMP, board_coord_to_index
+from config import BOARD_WIDTH, FIELD_EMPTY, FIELD_SWAMP
 
 __author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
 
 
 class bcolors:
     BLUE = '\033[44m'
-    SWAMP = '\033[42m'
+    SWAMP = '\033[42;32m'
     WHITE = '\033[47m'
     RED = '\033[41m'
     BASE_BLUE = '\033[34;47m'
@@ -33,10 +33,9 @@ def generate_swamp_location(width, height):
 def is_rect_empty(board, x, y, width, height):
     for x_off in range(width):
         for y_off in range(height):
-            cur_ind = board_coord_to_index(x + x_off, y + y_off)
-
-            if board[cur_ind] != FIELD_EMPTY:
+            if board[x + x_off][y + y_off] != FIELD_EMPTY:
                 return False
+
     return True
 
 
@@ -64,7 +63,7 @@ def generate_swamp(width, height, board):
     # Generate the swamp
     for x_off in range(width):
         for y_off in range(height):
-            board[board_coord_to_index(swamp_loc[0] + x_off, swamp_loc[1] + y_off)] = FIELD_SWAMP
+            board[swamp_loc[0] + x_off][swamp_loc[1] + y_off] = FIELD_SWAMP
 
     return board
 
@@ -72,7 +71,13 @@ def generate_swamp(width, height, board):
 @jit
 def create_new_boards(count):
     # Initializing the board with zeros
-    board = np.repeat(FIELD_EMPTY, BOARD_SIZE)
+    board = np.zeros((24, 24))
+
+    # Generating swamps in the four corners
+    board[0][0] = FIELD_SWAMP  # Top left corner
+    board[23][0] = FIELD_SWAMP  # Top right corner
+    board[0][23] = FIELD_SWAMP  # Bottom left corner
+    board[23][23] = FIELD_SWAMP  # Bottom right corner
 
     # Generating swamps according to game rules
     board = generate_swamp(3, 3, board)
@@ -80,17 +85,17 @@ def create_new_boards(count):
     board = generate_swamp(2, 2, board)
     board = generate_swamp(1, 1, board)
 
-    # Generating swamps in the four corners
-    board[0] = FIELD_SWAMP  # Top left corner
-    board[BOARD_WIDTH - 1] = FIELD_SWAMP  # Top right corner
-    board[BOARD_SIZE - BOARD_WIDTH] = FIELD_SWAMP  # Bottom left corner
-    board[BOARD_SIZE - 1] = FIELD_SWAMP  # Bottom right corner
-
     # Multiplying the board with the amount of parallel games and returning it
-    return np.tile(board, (count, 1))
+    boards = []
+    for i in range(count):
+        boards.append(board)
+
+    return boards
 
 
 @jit
 def create_new_links(count):
-    # Consult http://www.johannes-schwagereit.de/twixtProgramming/ to get to know where the 4 comes from :P
-    return np.zeros((count, BOARD_SIZE, 4))
+    # count = amount of games (multiplier for the board itself)
+    # BOARD_WIDTH, BOARD_WIDTH = Dimensions of the board (2D Array)
+    # 4 = 2 Coordinates (start and end point of link) each consisting of 2 values
+    return np.zeros((count, BOARD_WIDTH, BOARD_WIDTH, 4))

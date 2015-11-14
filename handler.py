@@ -21,23 +21,18 @@ def reset(game_count):
 
 
 def next_round(board, links, scores):
-    move = clients.Enemy.run(board)
+    move = clients.Enemy.run(board, 1)
     board, links, scores[0], won = server.run(board, links, scores[0], move, 1)
 
-    board = h.rotate_board_clockwise(board)
-
-    # move = AI.run(board)
-    move = clients.Enemy.run(board)
+    move = clients.Enemy.run(board, 2)  # move = AI.run(board)
     board, links, scores[1], won = server.run(board, links, scores[1], move, 2)
-
-    board = h.rotate_board_anti_clockwise(board)
 
     return board, links, scores, won
 
 
 def main():
     parallel_games = 1
-    rounds = 1
+    rounds = 30
     if len(sys.argv) >= 2 and sys.argv[1]:
         rounds = int(sys.argv[1])
 
@@ -61,25 +56,25 @@ def main():
         total_time += times[i]
 
     # ------------------------------------------------- STATS PRINTING -------------------------------------------------
+    if config.PRINT_STATS:
+        stats_header = "Simulated " + h.bold(str(parallel_games)) + " games with a total of " + h.bold(
+            str(parallel_games * rounds)) + " rounds."
 
-    stats_header = "Simulated " + h.bold(str(parallel_games)) + " games with a total of " + h.bold(
-        str(parallel_games * rounds)) + " rounds."
+        spaces = " " * int((103 - len(stats_header)) / 1.5)
+        stats_header = spaces + stats_header + spaces
 
-    spaces = " " * int((107 - len(stats_header)) / 1.5)
-    stats_header = spaces + stats_header + spaces
+        print('\n' * 2)
 
-    print('\n' * 2)
+        print(stats_header)
 
-    print(stats_header)
+        print("-------------------------------------------------------------------------------------------------------")
 
-    print("-----------------------------------------------------------------------------------------------------------")
+        print("Total time: " + '\033[1m' + str(total_time * 1000) + " milliseconds" + '\033[0m')
+        print("Average time per round: " + '\033[1m' + str(np.mean(times) * 1000 * 1000) + " microseconds" + '\033[0m')
+        print("-------------------------------------------------------------------------------------------------------")
+        print("              (All times exclude the first round to compensate for the JIT compiler)")
 
-    print("Total time: " + '\033[1m' + str(total_time * 1000) + " milliseconds" + '\033[0m')
-    print("Average time per round: " + '\033[1m' + str(np.mean(times) * 1000 * 1000) + " microseconds" + '\033[0m')
-    print("-----------------------------------------------------------------------------------------------------------")
-    print("                  (All times exclude the first round to compensate for the JIT compiler)")
-
-    print('\n' * 2)
+        print('\n' * 2)
 
     # ----------------------------------------------- STATS PRINTING END -----------------------------------------------
 
