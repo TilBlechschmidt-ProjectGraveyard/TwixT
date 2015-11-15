@@ -35,9 +35,11 @@ def move_is_valid(board, move, player):
 
     return field_empty and not inside_enemy_base
 
-
+"""
 @jit(nopython=True)
-def set_link(direction, loc, links):
+def set_link(start, end, links):
+
+
     # print("Setting link at ", loc, " into direction ", direction)
     # TODO: Make this fancier (if possible)
     links[loc][direction] = 10  # 10 = Here's a link
@@ -85,7 +87,7 @@ def set_link(direction, loc, links):
         links[loc + 2][1] += 1
         links[loc + 3][0] += 1
 
-    return links
+    return links"""
 
 
 @jit(nopython=True)
@@ -93,8 +95,9 @@ def calculate_score(links, board, player, score):
     pass
 
 
-@jit(nopython=True)
+@jit#(nopython=True)
 def check_link_possibility(links, board, loc, player, score):
+    """
     # TODO: Make this fancier (if possible)
     link_set = False
     if board[loc - 2 - BOARD_WIDTH] == player:
@@ -126,5 +129,30 @@ def check_link_possibility(links, board, loc, player, score):
     if dest < BOARD_SIZE and board[dest] == player:
         links = set_link(3, dest, links)
         link_set = True
-
+"""
+    link_set = False
+    if board[loc[0] - 1][loc[1] + 2] == player:
+        links.append([loc[0], loc[1], loc[0] - 1, loc[1] + 2])
+        link_set = True
+    if board[loc[0] + 1][loc[1] + 2] == player:
+        links.append([loc[0], loc[1], loc[0] - 1, loc[1] + 2])
+        link_set = True
+    if board[loc[0] + 2][loc[1] + 1] == player:
+        links.append([loc[0], loc[1], loc[0] - 1, loc[1] + 2])
+        link_set = True
+    if board[loc[0] + 2][loc[1] - 1] == player:
+        links.append([loc[0], loc[1], loc[0] - 1, loc[1] + 2])
+        link_set = True
+    if board[loc[0] - 1][loc[1] - 2] == player:
+        links.append([loc[0], loc[1], loc[0] - 1, loc[1] + 2])
+        link_set = True
+    if board[loc[0] + 1][loc[1] - 2] == player:
+        links.append([loc[0], loc[1], loc[0] - 1, loc[1] + 2])
+        link_set = True
+    if board[loc[0] - 2][loc[1] - 1] == player:
+        links.append([loc[0], loc[1], loc[0] - 1, loc[1] + 2])
+        link_set = True
+    if board[loc[0] - 2][loc[1] + 1] == player:
+        links.append([loc[0], loc[1], loc[0] - 1, loc[1] + 2])
+        link_set = True
     return links, link_set
