@@ -5,3 +5,4 @@ authors = ["Til Blechschmidt <til@blechschmidt.de>"]
 
 [dependencies]
 rustc-serialize = "0.3.16"
+time = "0.1.34"
