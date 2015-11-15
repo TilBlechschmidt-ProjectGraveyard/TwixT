@@ -1,4 +1,7 @@
 from config import *
+from numba import jit
+
+import numpy as np
 
 BOARD_SIZE = BOARD_WIDTH ** 2
 
