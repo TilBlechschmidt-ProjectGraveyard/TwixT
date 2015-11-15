@@ -1,5 +1,6 @@
 import random as rnd
 import warnings
+from copy import deepcopy
 
 import numpy as np
 from numba import jit
@@ -88,7 +89,7 @@ def create_new_boards(count):
     # Multiplying the board with the amount of parallel games and returning it
     boards = []
     for i in range(count):
-        boards.append(board)
+        boards.append(deepcopy(board))
 
     return boards
 

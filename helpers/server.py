@@ -1,6 +1,7 @@
 from numba import jit
 
 from config import BOARD_SIZE, BOARD_WIDTH
+from helpers import get_value
 
 __author__ = ['Til Blechschmidt', 'Noah Peeters', 'Merlin Brandt']
 
@@ -29,7 +30,7 @@ def is_inside_enemy_base(loc, player):  # TODO: Compress this function somehow (
 def move_is_valid(board, move, player):
     # Player 1 = RED = Left to right
     # Player 2 = BLUE = Top to bottom
-    field_empty = board[move[0]][move[1]] == 0
+    field_empty = get_value(board, move) == 0
     inside_enemy_base = is_inside_enemy_base(move, player)
 
     return field_empty and not inside_enemy_base
