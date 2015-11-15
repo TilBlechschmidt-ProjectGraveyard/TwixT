@@ -156,3 +156,145 @@ def check_link_possibility(links, board, loc, player, score):
         links.append([loc[0], loc[1], loc[0] - 1, loc[1] + 2])
         link_set = True
     return links, link_set
+
+def check_link_valid(start, end, links, board):
+    valid = True
+    if ((start[0] - 2 == end[0]) and (start[1] + 1 == end[1])):
+        direction = 0
+    elif ((start[0] - 1 == end[0]) and (start[1] + 2 == end[1])):
+        direction = 1
+    elif ((start[0] + 1 == end[0]) and (start[1] + 2 == end[1])):
+        direction = 2
+    elif ((start[0] + 2 == end[0]) and (start[1] + 1 == end[1])):
+        direction = 3
+    elif ((start[0] + 2 == end[0]) and (start[1] - 1 == end[1])):
+        direction = 4
+    elif ((start[0] + 1 == end[0]) and (start[1] - 2 == end[1])):
+        direction = 5
+    elif ((start[0] - 1 == end[0]) and (start[1] - 2 == end[1])):
+        direction = 6
+    elif ((start[0] - 2 == end[0]) and (start[1] + 1 == end[1])):
+        direction = 7
+    else:
+        direction = 8
+
+    if direction == 0:
+        valid = (False if (is_link((start[0]    ), (start[1] - 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1] - 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1] - 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 1, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1]    ), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 3), (start[1]    ), 3, links)) else valid)
+    elif direction == 1:
+        valid = (False if (is_link((start[0] - 1), (start[1] + 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0]    ), (start[1] - 1), 0, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1] - 1), 3, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1] - 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1] - 1), 3, links)) else valid)
+    elif direction == 2:
+        valid = (False if (is_link((start[0] + 1), (start[1] + 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0]    ), (start[1] - 1), 3, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1] - 1), 0, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1] - 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1] - 1), 0, links)) else valid)
+    elif direction == 3:
+        valid = (False if (is_link((start[0]    ), (start[1] + 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1] + 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1] + 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 2, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1]    ), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 3), (start[1]    ), 0, links)) else valid)
+    elif direction == 4:
+        valid = (False if (is_link((start[0]    ), (start[1] - 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1] - 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1] - 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 2, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1]    ), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 3), (start[1]    ), 0, links)) else valid)
+    elif direction == 5:
+        valid = (False if (is_link((start[0] + 1), (start[1] - 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0]    ), (start[1] + 1), 3, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1] + 1), 0, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1] + 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] + 2), (start[1] + 1), 0, links)) else valid)
+    elif direction == 6:
+        valid = (False if (is_link((start[0] - 1), (start[1] - 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] + 1), (start[1]    ), 0, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0]    ), (start[1] + 1), 0, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1] + 1), 3, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1] + 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1] + 1), 3, links)) else valid)
+    elif direction == 7:
+        valid = (False if (is_link((start[0]    ), (start[1] - 1), 1, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1] - 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1] - 1), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 1), (start[1]    ), 1, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1]    ), 3, links)) else valid)
+        valid = (False if (is_link((start[0] - 2), (start[1]    ), 2, links)) else valid)
+        valid = (False if (is_link((start[0] - 3), (start[1]    ), 3, links)) else valid)
+    else:
+        valid = False
+    return valid, links, board
+
+def is_link(x, y, direction, links):
+    if direction == 0:
+        x2 = x - 2
+        y2 = y + 1
+    elif direction == 1:
+        x2 = x - 1
+        y2 = y + 2
+    elif direction == 2:
+        x2 = x + 1
+        y2 = y + 2
+    elif direction == 3:
+        x2 = x + 2
+        y2 = y + 1
+    elif direction == 4:
+        x2 = x + 2
+        y2 = y - 1
+    elif direction == 5:
+        x2 = x + 1
+        y2 = y - 2
+    elif direction == 6:
+        x2 = x - 1
+        y2 = y - 2
+    elif direction == 7:
+        x2 = x - 2
+        y2 = y - 1
+    else:
+        x2 = x
+        y2 = y
+    for link in links:
+        if link[0] == x:
+            if link[1] == y:
+                if link[2] == x2:
+                    if link[3] == y2:
+                        return True
+    return False
+
