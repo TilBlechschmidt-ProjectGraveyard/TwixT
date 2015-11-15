@@ -218,7 +218,7 @@ def check_link_valid(start, end, links, board):
         valid = (False if (is_link((start[0] + 2), (start[1]    ), 0, links)) else valid)
         valid = (False if (is_link((start[0] + 2), (start[1]    ), 1, links)) else valid)
         valid = (False if (is_link((start[0] + 3), (start[1]    ), 0, links)) else valid)
-    elif direction == 4:
+    elif direction == 4:#TODO: Link directions 4-7 need to be tested and potentially fixed
         valid = (False if (is_link((start[0]    ), (start[1] - 1), 2, links)) else valid)
         valid = (False if (is_link((start[0] + 1), (start[1] - 1), 1, links)) else valid)
         valid = (False if (is_link((start[0] + 2), (start[1] - 1), 1, links)) else valid)
