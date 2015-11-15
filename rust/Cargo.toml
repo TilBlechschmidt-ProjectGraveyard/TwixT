@@ -1,0 +1,7 @@
+[package]
+name = "twixt"
+version = "0.1.0"
+authors = ["Til Blechschmidt <til@blechschmidt.de>"]
+
+[dependencies]
+rustc-serialize = "0.3.16"

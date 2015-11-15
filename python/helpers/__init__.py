@@ -1,4 +1,4 @@
 from game import *
-from setup import *
-from server import *
 from general import *
+from server import *
+from setup import *
