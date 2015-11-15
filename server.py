@@ -19,6 +19,7 @@ def run(board, links, score, move, player):
     #    score = h.calculate_score(links, board, player, score)
     #    # Step 2.2: Check if the player has won (*yay* or *nay*)
     #    won = (score >= 24)
+    links.append([1, 2, 3, 4])
 
     # Step 3: Apply the move
     board = h.set_value(board, move, player)

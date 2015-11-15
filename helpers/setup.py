@@ -99,4 +99,8 @@ def create_new_links(count):
     # count = amount of games (multiplier for the board itself)
     # BOARD_WIDTH, BOARD_WIDTH = Dimensions of the board (2D Array)
     # 4 = 2 Coordinates (start and end point of link) each consisting of 2 values
-    return np.zeros((count, BOARD_WIDTH, BOARD_WIDTH, 4))
+    # return np.zeros((count, BOARD_WIDTH, BOARD_WIDTH, 4))
+    links = []
+    for i in range(count):
+        links.append([])
+    return links
