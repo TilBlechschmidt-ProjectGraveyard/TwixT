@@ -1,48 +1,23 @@
 extern crate time;
 extern crate rustc_serialize;
-use rustc_serialize::json;
+mod structures;
+mod clients;
+use clients::simple_client;
+use structures::*;
+//use rustc_serialize::json;
 
-const BOARD_WIDTH: usize = 24;
-const PREALLOC_LINKS: usize = 20;
-
-#[derive(RustcDecodable, RustcEncodable)]
-struct Game {
-	board: Vec<Vec<u8>>,
-	links: Vec<[(u16, u16); 2]>,
-	scores: (u8, u8)
-}
-
-impl Game {
-	fn new() -> Game {
-		Game {
-			board: vec![vec![0; BOARD_WIDTH]; BOARD_WIDTH],
-			links: Vec::with_capacity(PREALLOC_LINKS),
-			scores: (0, 0)
-		}
-	}
-
-	fn next_round(&mut self) {
-		// TODO: Do something in here that actually makes sense :D
-		self.links.push([(1, 2), (3, 4)]);
-		self.links.push([(9, 8), (7, 6)]);
-		self.board[6][9] = 1;
-	}
-
-	fn run(&mut self) -> (i8, i8) {
-		for _ in 0..30 { self .next_round()}
-		(24, 5) // Return the total scores
-	}
-}
 
 fn main() {
 	let start_time = time::precise_time_ns();
 
-	let mut g = Game::new();
+	//TODO: Make this a borrowed pointer to the player instead of a passed function
+	let mut g = Game::new(simple_client::run, simple_client::run);
 	g.run();
 
 	let time = time::precise_time_ns() - start_time;
 
-	let encoded = json::encode(&g).unwrap();
-	println!("{}", encoded);
+	//let encoded = json::encode(&g).unwrap();
+	//println!("{}", encoded);
 	println!("The whole calculation took {} nanoseconds", time);
+	println!("Scores are p1: {}, p2: {}", g.scores.0, g.scores.1);
 }
