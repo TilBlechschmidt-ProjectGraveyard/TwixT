@@ -43,7 +43,7 @@ fn main() {
 
 	let time = time::precise_time_ns() - start_time;
 
-		let encoded = json::encode(&g).unwrap();
-		println!("{}", encoded);
+	let encoded = json::encode(&g).unwrap();
+	println!("{}", encoded);
 	println!("The whole calculation took {} nanoseconds", time);
 }
