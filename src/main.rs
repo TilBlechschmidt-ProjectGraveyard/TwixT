@@ -29,7 +29,6 @@ impl Game {
 	}
 
 	fn run(&mut self) -> (i8, i8) {
-		// TODO: If possible remove i as it's not required
 		for _ in 0..30 { self .next_round()}
 		(24, 5) // Return the total scores
 	}
