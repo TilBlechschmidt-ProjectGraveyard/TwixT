@@ -30,7 +30,7 @@ impl Game {
 
 	fn run(&mut self) -> (i8, i8) {
 		// TODO: If possible remove i as it's not required
-		for x in 0..30 { self .next_round()}
+		for _ in 0..30 { self .next_round()}
 		(24, 1) // Return the total scores
 	}
 }
@@ -38,7 +38,7 @@ impl Game {
 fn main() {
 	let start_time = time::precise_time_ns();
 
-		let mut g = Game::new();
+	let mut g = Game::new();
 	g.run();
 
 	let time = time::precise_time_ns() - start_time;
@@ -47,4 +47,3 @@ fn main() {
 		println!("{}", encoded);
 	println!("The whole calculation took {} nanoseconds", time);
 }
-
