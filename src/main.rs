@@ -24,7 +24,7 @@ impl Game {
 	fn next_round(&mut self) {
 		// TODO: Do something in here that actually makes sense :D
 		self.links.push([(1, 2), (3, 4)]);
-		self.links.push([(9, 8), (8, 6)]);
+		self.links.push([(9, 8), (7, 6)]);
 		self.board[6][9] = 1;
 	}
 
