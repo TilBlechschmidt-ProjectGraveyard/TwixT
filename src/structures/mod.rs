@@ -88,6 +88,38 @@ impl Game {
 	}
 }
 
+
+#[cfg(test)]
+mod interface_tests {
+    use super::execute_move;
+	use super::BOARD_WIDTH;
+	use super::Move;
+
+	#[test]
+	#[cfg(feature = "internal_server")]
+	fn exec_moves() { // Check if it's smart enough to recognize enemy bases.
+		let mut board = [[0; BOARD_WIDTH]; BOARD_WIDTH];
+		assert_eq!(0, board[0][1]);
+		execute_move(&mut board, Move { x: 0, y: 1 }, 0);
+		assert_eq!(0, board[0][1]);
+		execute_move(&mut board, Move { x: 0, y: 1 }, 1);
+		assert_eq!(1, board[0][1]);
+	}
+
+	#[test]
+	#[cfg(feature = "xml")]
+    fn exec_moves() { // Check if it's dumb enough to just executes our moves without thinking.
+		let mut board = [[0; BOARD_WIDTH]; BOARD_WIDTH];
+		for x in 0..BOARD_WIDTH {
+			for y in 0..BOARD_WIDTH {
+		        assert_eq!(0, board[x][y]);
+				execute_move(&mut board, Move { x: x, y: y }, 0);
+				assert_eq!(1, board[x][y]);
+			}
+		}
+    }
+}
+
 // pub struct Server {
 // 	games: Vec<Game>,
 // 	clients: Vec<(Player, Player)>
