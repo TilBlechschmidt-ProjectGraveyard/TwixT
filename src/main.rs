@@ -31,7 +31,7 @@ impl Game {
 	fn run(&mut self) -> (i8, i8) {
 		// TODO: If possible remove i as it's not required
 		for _ in 0..30 { self .next_round()}
-		(24, 1) // Return the total scores
+		(24, 5) // Return the total scores
 	}
 }
 
@@ -43,7 +43,7 @@ fn main() {
 
 	let time = time::precise_time_ns() - start_time;
 
-		let encoded = json::encode(&g).unwrap();
-		println!("{}", encoded);
+	let encoded = json::encode(&g).unwrap();
+	println!("{}", encoded);
 	println!("The whole calculation took {} nanoseconds", time);
 }
