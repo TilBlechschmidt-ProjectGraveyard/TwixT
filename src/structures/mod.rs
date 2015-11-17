@@ -23,16 +23,6 @@ pub struct Game {
 	pub scores: (u8, u8)
 }
 
-#[cfg(feature = "internal_server")]
-fn execute_move(board: &mut Board, mv: Move, player_id: usize) {
-	interface::server::execute_move(board, mv, player_id);
-}
-
-#[cfg(feature = "xml")]
-fn execute_move(board: &mut Board, mv: Move, player_id: usize) {
-	interface::xml::execute_move(board, mv, player_id);
-}
-
 impl Game {
 	pub fn new(p1: Player, p2: Player, swamps: bool) -> Game {
 		let mut g = Game {
@@ -52,14 +42,24 @@ impl Game {
 		self.board[BOARD_WIDTH-1][BOARD_WIDTH-1] = 3;
 	}
 
+	#[cfg(feature = "internal_server")]
+	fn execute_move(&mut self, mv: Move, player_id: usize) {
+		interface::server::execute_move(&mut self.board, mv, player_id);
+	}
+
+	#[cfg(feature = "xml")]
+	fn execute_move(&mut self, mv: Move, player_id: usize) {
+		interface::xml::execute_move(&mut self.board, mv, player_id);
+	}
+
 	//#[cfg(feature = "internal_server")]
 	pub fn run(&mut self) -> (i8, i8) {
 		for _ in 0..30 {
 			let mv = self.clients.0(&self.board, &self.links);
-			execute_move(&mut self.board, mv, 0);
+			self.execute_move(mv, 0);
 
 			let mv = self.clients.1(&self.board, &self.links);
-			execute_move(&mut self.board, mv, 1);
+			self.execute_move(mv, 1);
 		}
 		(24, 5) // Return the total scores
 	}
@@ -86,38 +86,6 @@ impl Game {
 			println!("{}", Black.bg(Black).paint("|"));
 		}
 	}
-}
-
-
-#[cfg(test)]
-mod interface_tests {
-    use super::execute_move;
-	use super::BOARD_WIDTH;
-	use super::Move;
-
-	#[test]
-	#[cfg(feature = "internal_server")]
-	fn exec_moves() { // Check if it's smart enough to recognize enemy bases.
-		let mut board = [[0; BOARD_WIDTH]; BOARD_WIDTH];
-		assert_eq!(0, board[0][1]);
-		execute_move(&mut board, Move { x: 0, y: 1 }, 0);
-		assert_eq!(0, board[0][1]);
-		execute_move(&mut board, Move { x: 0, y: 1 }, 1);
-		assert_eq!(1, board[0][1]);
-	}
-
-	#[test]
-	#[cfg(feature = "xml")]
-    fn exec_moves() { // Check if it's dumb enough to just executes our moves without thinking.
-		let mut board = [[0; BOARD_WIDTH]; BOARD_WIDTH];
-		for x in 0..BOARD_WIDTH {
-			for y in 0..BOARD_WIDTH {
-		        assert_eq!(0, board[x][y]);
-				execute_move(&mut board, Move { x: x, y: y }, 0);
-				assert_eq!(1, board[x][y]);
-			}
-		}
-    }
 }
 
 // pub struct Server {
