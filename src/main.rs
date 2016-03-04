@@ -1,12 +1,12 @@
 extern crate time;
 mod structures;
 mod clients;
-use clients::simple_client;
+use clients::*;
 use structures::*;
 
 fn main() {
 	//TODO: Make this a borrowed pointer to the player instead of a passed function
-	let mut g = Game::new(simple_client::run, simple_client::run, true);
+	let mut g = Game::new(SimpleClient::new(0), NeuralNetwork::new(1), true);
 
 	let start_time = time::precise_time_ns();
 	let scores = g.run();

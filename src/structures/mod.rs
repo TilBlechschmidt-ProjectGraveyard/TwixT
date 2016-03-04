@@ -6,6 +6,7 @@ use self::term_painter::*;
 use self::term_painter::Color::*;
 
 mod interface;
+use super::clients::*;
 
 pub const BOARD_WIDTH: usize = 24;
 pub const FIELD_SWAMP: usize = 3;
@@ -15,19 +16,19 @@ type Link = [usize; 4]; //[(usize, usize); 8];
 pub struct Move { pub x: usize, pub y: usize }
 pub type Board = [[Field; BOARD_WIDTH]; BOARD_WIDTH];
 pub type Links = Vec<Link>;//[[Link; BOARD_WIDTH]; BOARD_WIDTH];
-pub type Player = fn(&Board, &Links) -> Move;
+pub type Player = SimpleClient;
 pub type Clients = (Player, Player);
 
 
-pub struct Game {
+pub struct Game<A: Client, B: Client> {
 	board: Board,
 	links: Links,
-	clients: Clients,
+	clients: (A, B),
 	pub scores: (u8, u8)
 }
 
-impl Game {
-	pub fn new(p1: Player, p2: Player, swamps: bool) -> Game {
+impl<A: Client, B: Client> Game<A, B> {
+	pub fn new(p1: A, p2: B, swamps: bool) -> Game<A, B> {
 		let mut g = Game {
 			board: [[0; BOARD_WIDTH]; BOARD_WIDTH],
 			links: Vec::with_capacity(24), //[[[0; 4]; BOARD_WIDTH]; BOARD_WIDTH],
@@ -141,10 +142,10 @@ impl Game {
 	pub fn run(&mut self) -> [u8; 2] {
 		let mut scores = [0, 0];
 		for _ in 0..30 {
-			let mv = self.clients.0(&self.board, &self.links);
+			let mv = self.clients.0.run(&self.board, &self.links);
 			if self.execute_move(mv, 0) { self.recalculate_score(0, &mut scores) };
 
-			let mv = self.clients.1(&self.board, &self.links);
+			let mv = self.clients.1.run(&self.board, &self.links);
 			if self.execute_move(mv, 1) { self.recalculate_score(1, &mut scores) };
 		}
 		scores

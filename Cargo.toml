@@ -5,8 +5,9 @@ authors = ["Til Blechschmidt <til@blechschmidt.de>"]
 
 [features]
 # no features by default
-default = ["internal_server", "simple_client"]
+default = ["internal_server", "simple_client", "neural_network"]
 simple_client = ["rand"]
+neural_network = []
 internal_server = []
 xml = []
 

@@ -63,6 +63,7 @@ fn is_link(xi: i32, yi: i32, direction: usize, links: &Links) -> bool {
 fn check_link_possibility(start: [usize; 2], end: [usize; 2], links: &Links) -> bool {
     let direction;
     let mut valid = true;
+    // TODO: Move this into a helper function (dupe from neural_network.rs)
     if (start[0].saturating_sub(2) == end[0]) && (start[1] + 1 == end[1]) {
         direction = 0
     } else if (start[0].saturating_sub(1) == end[0]) && (start[1] + 2 == end[1]) {
