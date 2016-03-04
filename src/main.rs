@@ -16,5 +16,5 @@ fn main() {
 	g.print_links();
 	println!("The whole calculation took {}μs", time);
 	println!("Therefore one round took {}μs", (((time as f64) / 30.0) * 100.0).round() / 100.0);
-	println!("Scores are ({}, {})", scores.0, scores.1);
+	println!("Scores are ({}, {})", scores[0], scores[1]);
 }

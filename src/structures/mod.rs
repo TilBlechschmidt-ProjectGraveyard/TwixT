@@ -79,9 +79,57 @@ impl Game {
 		self.generate_swamp(1, 1);
 	}
 
+	fn score_branch(&self, link: Link, player: usize, done: &mut Links) -> Links {
+		let mut endpoints = Vec::new();
+		let done_tmp = done.clone();
+		let sub_branches = self.links.iter().filter(|&x|
+				((x[0] == link[0] && x[1] == link[1]) || (x[2] == link[2] && x[3] == link[3]))
+			&& 	!(*x == link)
+			&&  !(done_tmp.contains(x))
+			&&	self.board[link[0]][link[1]] == player+1
+		);
+
+		let mut endpoint = true;
+		for sub_branch in sub_branches {
+			done.push(*sub_branch);
+			endpoints.extend(self.score_branch(*sub_branch, player, done).into_iter());
+			endpoint = false;
+		}
+		if endpoint { return vec![link] } else { endpoints }
+	}
+
+	fn recalculate_score(&mut self, player: usize, scores: &mut [u8; 2]) {
+		for link in self.links.iter() {
+			if self.board[link[0]][link[1]] == player+1 {
+				//println!("BRANCHING @ {} {} -> {} {}", link[0], link[1], link[2], link[3]);
+				let endpoints = self.score_branch(*link, player, &mut vec![*link]);
+				for endpoint in endpoints.iter() {
+					let d1; let d2; let d3;
+					if player == 0 {
+						// Scores for the Y axis
+						d1 = endpoint[1] as i16 - link[1] as i16;
+						d2 = endpoint[3] as i16 - link[1] as i16;
+						d3 = endpoint[1] as i16 - link[3] as i16;
+					} else {
+						// Scores for the X axis
+						d1 = endpoint[0] as i16 - link[0] as i16;
+						d2 = endpoint[2] as i16 - link[0] as i16;
+						d3 = endpoint[0] as i16 - link[2] as i16;
+					}
+					let new_score =
+							 if d1 > d2 && d1 > d3 { d1 }
+						else if d2 > d1 && d2 > d3 { d2 }
+						else if d3 > d2 && d3 > d1 { d3 }
+						else { 0 };
+					if new_score > (scores[player] as i16) { scores[player] = new_score as u8 };
+				}
+			}
+		}
+	}
+
 	#[cfg(feature = "internal_server")]
-	fn execute_move(&mut self, mv: Move, player_id: usize) {
-		interface::server::execute_move(&mut self.board, &mut self.links, mv, player_id);
+	fn execute_move(&mut self, mv: Move, player_id: usize) -> bool {
+		interface::server::execute_move(&mut self.board, &mut self.links, mv, player_id)
 	}
 
 	#[cfg(feature = "xml")]
@@ -90,15 +138,16 @@ impl Game {
 	}
 
 	//#[cfg(feature = "internal_server")]
-	pub fn run(&mut self) -> (i8, i8) {
+	pub fn run(&mut self) -> [u8; 2] {
+		let mut scores = [0, 0];
 		for _ in 0..30 {
 			let mv = self.clients.0(&self.board, &self.links);
-			self.execute_move(mv, 0);
+			if self.execute_move(mv, 0) { self.recalculate_score(0, &mut scores) };
 
 			let mv = self.clients.1(&self.board, &self.links);
-			self.execute_move(mv, 1);
+			if self.execute_move(mv, 1) { self.recalculate_score(1, &mut scores) };
 		}
-		(24, 5) // Return the total scores
+		scores
 	}
 
 	pub fn print_board(&self) {

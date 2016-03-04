@@ -23,7 +23,7 @@ fn get_field(board: &mut Board, x: usize, y: usize) -> usize {
 }
 
 fn is_link(xi: i32, yi: i32, direction: usize, links: &Links) -> bool {
-    if xi < 0 || yi < 0 { println!("ao catch!"); return false };
+    if xi < 0 || yi < 0 { return false };
     let x: usize = xi as usize;
     let y: usize = yi as usize;
     let x2;
@@ -172,8 +172,8 @@ fn check_link_possibility(start: [usize; 2], end: [usize; 2], links: &Links) -> 
     valid
 }
 
-fn set_link_if_possible(links: &mut Links, board: &mut Board, loc: Move, player: usize) {
-    //let length = links.len();
+fn set_link_if_possible(links: &mut Links, board: &mut Board, loc: Move, player: usize) -> bool {
+    let length = links.len();
     //println!("{} {}", loc.x, loc.y);
     if loc.x > 0 &&                 get_field(board, loc.x - 1, loc.y + 2) == player && check_link_possibility([loc.x, loc.y], [loc.x - 1, loc.y + 2], links) { links.push([loc.x, loc.y, loc.x - 1, loc.y + 2]) }
     if                              get_field(board, loc.x + 1, loc.y + 2) == player && check_link_possibility([loc.x, loc.y], [loc.x + 1, loc.y + 2], links) { links.push([loc.x, loc.y, loc.x + 1, loc.y + 2]) }
@@ -183,18 +183,23 @@ fn set_link_if_possible(links: &mut Links, board: &mut Board, loc: Move, player:
     if loc.y > 1 &&                 get_field(board, loc.x + 1, loc.y - 2) == player && check_link_possibility([loc.x, loc.y], [loc.x + 1, loc.y - 2], links) { links.push([loc.x, loc.y, loc.x + 1, loc.y - 2]) }
     if loc.x > 1 && loc.y > 0 &&    get_field(board, loc.x - 2, loc.y - 1) == player && check_link_possibility([loc.x, loc.y], [loc.x - 2, loc.y - 1], links) { links.push([loc.x, loc.y, loc.x - 2, loc.y - 1]) }
     if loc.x > 1 &&                 get_field(board, loc.x - 2, loc.y + 1) == player && check_link_possibility([loc.x, loc.y], [loc.x - 2, loc.y + 1], links) { links.push([loc.x, loc.y, loc.x - 2, loc.y + 1]) }
-    //if links.len() != length { println!("Created link for player {}", player-1) }
+    if links.len() != length { true } else { false }
 }
 
-pub fn execute_move(board: &mut Board, links: &mut Links, mv: Move, player_id: usize) {
-	if board[mv.x][mv.y] == 3 {
-        println!("INVALID MOVE BY PLAYER {}  - Collision with swamp. ({}, {})", player_id, mv.x, mv.y);
-	} else if board[mv.x][mv.y] != 0 {
-        println!("INVALID MOVE BY PLAYER {} - Field already occupied. ({}, {})", player_id, mv.x, mv.y);
-	} else if is_inside_enemy_base(&mv, &player_id) {
-		println!("INVALID MOVE BY PLAYER {}  - Inside enemy base. ({}, {})", player_id, mv.x, mv.y);
-	} else {
-		board[mv.x][mv.y] = player_id + 1;
-        set_link_if_possible(links, board, mv, player_id+1);
-	}
+pub fn execute_move(board: &mut Board, links: &mut Links, mv: Move, player_id: usize) -> bool {
+	// if board[mv.x][mv.y] == 3 {
+    //     println!("INVALID MOVE BY PLAYER {}  - Collision with swamp. ({}, {})", player_id, mv.x, mv.y);
+	// } else if board[mv.x][mv.y] != 0 {
+    //     println!("INVALID MOVE BY PLAYER {} - Field already occupied. ({}, {})", player_id, mv.x, mv.y);
+	// } else if is_inside_enemy_base(&mv, &player_id) {
+	//     println!("INVALID MOVE BY PLAYER {}  - Inside enemy base. ({}, {})", player_id, mv.x, mv.y);
+	// } else {
+	// 	   board[mv.x][mv.y] = player_id + 1;
+    //     if set_link_if_possible(links, board, mv, player_id+1) { return true };
+	// }
+    if board[mv.x][mv.y] == 0 && !(is_inside_enemy_base(&mv, &player_id)) {
+        board[mv.x][mv.y] = player_id + 1;
+        if set_link_if_possible(links, board, mv, player_id+1) { return true };
+    }
+    false
 }
