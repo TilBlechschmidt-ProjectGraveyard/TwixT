@@ -2,22 +2,25 @@
 
 extern crate rand;
 use std::f64::*;
+use std::collections::HashMap;
 use structures::*;
 use self::rand::Rng;
 use clients::Client;
 
 pub type Float = f64;
+pub type Location = (usize, usize);
 const PREALLOC_IO: usize = 576;
-const INPUT_LENGTH: usize = 1153; // 24*24 + 24*24 + 1 // Board, Links, PlayerID
+const LINK_LENGTH: usize = 1153; // 24*24 + 24*24 + 1 // Board, Links, PlayerID
+const OUTPUT_LENGTH: usize = 576;
 
-pub struct Input {
+pub struct Link {
     weight: Float,
     pub value: Float
 }
 
-impl Input {
-    fn new(weight: Float) -> Input {
-        Input {
+impl Link {
+    fn new(weight: Float) -> Link {
+        Link {
             weight: weight,
             value: 0.0
         }
@@ -30,8 +33,8 @@ impl Input {
 
 pub struct SigmoidNeuron<'a> {
     bias: Float,
-    inputs: Vec<&'a Input>,
-    outputs: Vec<Input>
+    inputs: Vec<&'a Link>,
+    outputs: Vec<Link>
 }
 
 impl<'a> SigmoidNeuron<'a> {
@@ -54,17 +57,19 @@ impl<'a> SigmoidNeuron<'a> {
         for output in self.outputs.iter_mut() { output.set_value(out) };
     }
 
-    pub fn add_input(&mut self, input: &'a Input) {
+    pub fn add_input(&mut self, input: &'a Link) {
         self.inputs.push(input);
     }
 
-    pub fn add_output(&mut self, output: Input) {
+    pub fn add_output(&'a mut self, weight: Float) -> &'a Link {
+        let output = Link::new(weight);
         self.outputs.push(output);
+        self.outputs.get(self.outputs.len()).unwrap()
     }
 }
 
 pub struct Output<'a> {
-    inputs: Vec<&'a Input>,
+    inputs: Vec<&'a Link>,
     bias: Float,
     gradient: Float,
     value: Float
@@ -95,22 +100,20 @@ impl<'a> Output<'a> {
 
 pub struct NeuralNetwork<'b> {
     player: u8,
-    pub inputs: Vec<Input>,
-    pub layer0: Vec<SigmoidNeuron<'b>>,
-    //pub layer1: Vec<SigmoidNeuron<'b>>,
-    pub outputs: Vec<Output<'b>>
+    inputs: HashMap<usize, Link>,
+    hidden: HashMap<usize, HashMap<usize, SigmoidNeuron<'b>>>,
+    outputs: HashMap<usize, Output<'b>>
 }
 
 impl<'b> NeuralNetwork<'b> {
-    pub fn new(player: u8, input_weights: [Float; INPUT_LENGTH]) -> NeuralNetwork<'b> {
-        let mut inputs = Vec::with_capacity(INPUT_LENGTH);
-        for i in 0..INPUT_LENGTH { inputs.push(Input::new(input_weights[i])) };
+    pub fn new(player: u8, input_weights: [Float; LINK_LENGTH]) -> NeuralNetwork<'b> {
+        let mut inputs: HashMap<usize, Link> = HashMap::with_capacity(LINK_LENGTH);
+        for i in 0..LINK_LENGTH { inputs.insert(0, Link::new(input_weights[i])); }
         NeuralNetwork {
             player: player,
             inputs: inputs,
-            layer0: Vec::new(),
-            //layer1: Vec::new(),
-            outputs: Vec::with_capacity(BOARD_WIDTH*BOARD_WIDTH)
+            hidden: HashMap::new(),
+            outputs: HashMap::with_capacity(BOARD_WIDTH*BOARD_WIDTH)
         }
     }
 
@@ -120,16 +123,35 @@ impl<'b> NeuralNetwork<'b> {
 
     fn set_inputs(&mut self, input_values: Vec<Float>) {
         for (value, input) in input_values.iter().zip(self.inputs.iter_mut()) {
-            input.set_value(*value);
+            input.1.set_value(*value);
         }
     }
 
-    pub fn create_neuron(&mut self, bias: Float) {
-        self.layer0.push(SigmoidNeuron::new(bias));
+    pub fn link_neuron(&'b mut self, start_neuron: Location, end_neuron: Location) -> bool {
+        // // Add link for start neuron
+        // let maybe_link = self.hidden.get_mut(&start_neuron.0)
+        //     .and_then(|origin_layer| origin_layer.get_mut(&start_neuron.1))
+        //     .map(|origin_neuron| origin_neuron.add_output(1.0));
+        //
+        // // Add link for end neuron
+        // self.hidden.get_mut(&end_neuron.0)
+        //     .and_then(|dest_layer| dest_layer.get_mut(&end_neuron.1))
+        //     .and_then(|dest_neuron| {
+        //         maybe_link.map(|link| {
+        //             dest_neuron.add_input(link);
+        //         })
+        //     })
+        //     .is_some()
+        true
     }
 
-    pub fn create_output(&mut self, bias: Float, gradient: Float) {
-        self.outputs.push(Output::new(bias, gradient));
+    pub fn create_neuron(&mut self, location: Location, bias: Float) {
+        if !(self.hidden.contains_key(&location.0)) { self.hidden.insert(location.0, HashMap::new()); }
+        self.hidden.get_mut(&location.0).unwrap().insert(location.1, SigmoidNeuron::new(bias));
+    }
+
+    pub fn create_output(&mut self, id: usize, bias: Float, gradient: Float) {
+        self.outputs.insert(id, Output::new(bias, gradient));
     }
 }
 

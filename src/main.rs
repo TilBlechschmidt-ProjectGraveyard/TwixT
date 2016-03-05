@@ -14,13 +14,13 @@ fn main() {
 		weights[i] = rand::thread_rng().next_f64();
 	}
 	let mut nn = NeuralNetwork::new(1, weights);
-	// for _ in 0..NEURONS { nn.create_neuron(0.0) }
+	for x in 0..NEURONS { nn.create_neuron((x, 0), 0.0) }
 	// for input in nn.inputs.iter_mut() {
 	// 	for neuron in nn.layer0.iter() {
 	// 		neuron.add_input(input);
 	// 	}
 	// }
-	for _ in 0..(BOARD_WIDTH*BOARD_WIDTH) { nn.create_output(0.0, 1.0) }
+	for i in 0..(BOARD_WIDTH*BOARD_WIDTH) { nn.create_output(i, 0.0, 1.0) }
 
 
 	let mut g = Game::new(SimpleClient::new(0), NeuralNetwork::new(1, weights), true);
