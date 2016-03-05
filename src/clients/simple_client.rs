@@ -8,7 +8,7 @@ pub struct SimpleClient {
 }
 
 impl Client for SimpleClient {
-    fn run(&self, _b: &Board, _l: &Links) -> Move {
+    fn run(&mut self, _b: &Board, _l: &Links) -> Move {
         let x = rand::thread_rng().gen_range(0, BOARD_WIDTH);
         let y = rand::thread_rng().gen_range(0, BOARD_WIDTH);
         Move { x: x, y: y }

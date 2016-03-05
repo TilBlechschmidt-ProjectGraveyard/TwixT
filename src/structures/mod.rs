@@ -12,10 +12,10 @@ pub const BOARD_WIDTH: usize = 24;
 pub const FIELD_SWAMP: usize = 3;
 
 type Field = usize;
-type Link = [usize; 4]; //[(usize, usize); 8];
+type Link = [usize; 4];
 pub struct Move { pub x: usize, pub y: usize }
 pub type Board = [[Field; BOARD_WIDTH]; BOARD_WIDTH];
-pub type Links = Vec<Link>;//[[Link; BOARD_WIDTH]; BOARD_WIDTH];
+pub type Links = Vec<Link>;
 pub type Player = SimpleClient;
 pub type Clients = (Player, Player);
 
@@ -31,7 +31,7 @@ impl<A: Client, B: Client> Game<A, B> {
 	pub fn new(p1: A, p2: B, swamps: bool) -> Game<A, B> {
 		let mut g = Game {
 			board: [[0; BOARD_WIDTH]; BOARD_WIDTH],
-			links: Vec::with_capacity(24), //[[[0; 4]; BOARD_WIDTH]; BOARD_WIDTH],
+			links: Vec::with_capacity(BOARD_WIDTH),
 			clients: (p1, p2),
 			scores: (0, 0)
 		};
@@ -102,7 +102,6 @@ impl<A: Client, B: Client> Game<A, B> {
 	fn recalculate_score(&mut self, player: usize, scores: &mut [u8; 2]) {
 		for link in self.links.iter() {
 			if self.board[link[0]][link[1]] == player+1 {
-				//println!("BRANCHING @ {} {} -> {} {}", link[0], link[1], link[2], link[3]);
 				let endpoints = self.score_branch(*link, player, &mut vec![*link]);
 				for endpoint in endpoints.iter() {
 					let d1; let d2; let d3;
