@@ -143,9 +143,11 @@ impl<A: Client, B: Client> Game<A, B> {
 		for _ in 0..30 {
 			let mv = self.clients.0.run(&self.board, &self.links);
 			if self.execute_move(mv, 0) { self.recalculate_score(0, &mut scores) };
+			if scores[0] > 23 { println!("Player 0 won!"); break; }
 
 			let mv = self.clients.1.run(&self.board, &self.links);
 			if self.execute_move(mv, 1) { self.recalculate_score(1, &mut scores) };
+			if scores[1] > 23 { println!("Player 1 won!"); break; }
 		}
 		scores
 	}

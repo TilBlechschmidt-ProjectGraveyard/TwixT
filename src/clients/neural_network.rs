@@ -11,7 +11,7 @@ pub type Float = f64;
 pub type Location = (usize, usize);
 const PREALLOC_IO: usize = 576;
 const LINK_LENGTH: usize = 1153; // 24*24 + 24*24 + 1 // Board, Links, PlayerID
-const OUTPUT_LENGTH: usize = 576;
+pub const OUTPUT_LENGTH: usize = 576;
 
 pub struct Link {
     weight: Float,
@@ -34,7 +34,7 @@ impl Link {
 pub struct SigmoidNeuron<'a> {
     bias: Float,
     inputs: Vec<&'a Link>,
-    outputs: Vec<Link>
+    outputs: Vec<Link>,
 }
 
 impl<'a> SigmoidNeuron<'a> {
