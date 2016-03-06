@@ -1,186 +1,194 @@
 #![allow(dead_code)]
-
-extern crate rand;
 use std::f64::*;
-use std::collections::HashMap;
 use structures::*;
-use self::rand::Rng;
+use rustc_serialize::json::{EncoderError, DecoderError, self};
+use rand::Rng;
 use clients::Client;
 
 pub type Float = f64;
 pub type Location = (usize, usize);
 const PREALLOC_IO: usize = 576;
-const LINK_LENGTH: usize = 1153; // 24*24 + 24*24 + 1 // Board, Links, PlayerID
+pub const INPUT_LENGTH: usize = 1152;//1729;//1153; // 24*24 + 24*24 + 1 // Board, Links, PlayerID
 pub const OUTPUT_LENGTH: usize = 576;
+const GRADIENT: Float = 1.0;
 
-pub struct Link {
-    weight: Float,
-    pub value: Float
+#[derive(Debug)]
+enum Error {
+    InputLengthMismatch
 }
 
-impl Link {
-    fn new(weight: Float) -> Link {
-        Link {
-            weight: weight,
-            value: 0.0
+impl Error {
+    fn print(&self) -> String {
+        match *self {
+            Error::InputLengthMismatch => {
+                "Input length mismatched expected length.".to_string()
+            }
         }
     }
-
-    fn set_value(&mut self, value: Float) {
-        self.value = value * self.weight;
-    }
 }
 
-pub struct SigmoidNeuron<'a> {
-    bias: Float,
-    inputs: Vec<&'a Link>,
-    outputs: Vec<Link>,
+enum Interpolation {
+    Sigmoid,
+    Linear(Float)
 }
 
-impl<'a> SigmoidNeuron<'a> {
-    pub fn new(bias: Float) -> SigmoidNeuron<'a> {
-        SigmoidNeuron {
+#[derive(RustcDecodable, RustcEncodable, Clone)]
+pub struct Neuron {
+    pub bias: Float,
+    pub weights: Vec<Float>
+}
+
+impl Neuron {
+    pub fn new(bias: Float) -> Neuron {
+        Neuron {
             bias: bias,
-            inputs: Vec::with_capacity(PREALLOC_IO),
-            outputs: Vec::with_capacity(PREALLOC_IO)
+            weights: Vec::with_capacity(PREALLOC_IO)
         }
     }
 
-    fn apply(&mut self) {
-        // Add the bias to the mix
-        let mut out = self.bias;
-        // Add all input values to the mix (weight already applied by input struct)
-        for input in self.inputs.iter() { out = out + input.value };
-        // Apply the sigmoid function to the resulting value
-        out = 1.0 / (1.0 + consts::E.powf(out));
-        // Send the resulting value to all the outputs
-        for output in self.outputs.iter_mut() { output.set_value(out) };
-    }
-
-    pub fn add_input(&mut self, input: &'a Link) {
-        self.inputs.push(input);
-    }
-
-    pub fn add_output(&'a mut self, weight: Float) -> &'a Link {
-        let output = Link::new(weight);
-        self.outputs.push(output);
-        self.outputs.get(self.outputs.len()).unwrap()
-    }
-}
-
-pub struct Output<'a> {
-    inputs: Vec<&'a Link>,
-    bias: Float,
-    gradient: Float,
-    value: Float
-}
-
-impl<'a> Output<'a> {
-    fn new(bias: Float, gradient: Float) -> Output<'a> {
-        Output {
-            bias: bias,
-            inputs: Vec::with_capacity(PREALLOC_IO),
-            gradient: gradient,
-            value: 0.0
+    pub fn new_random<R: Rng>(weight_count: usize, rng: &mut R) -> Neuron {
+        Neuron {
+            bias: rng.next_f64()*weight_count as f64,
+            weights: (0..weight_count).map(|_| rng.next_f64() * 2.0 - 1.0).collect()
         }
     }
 
-    fn apply(&mut self) -> Float {
-        // Add the bias to the mix
-        let mut out = self.bias;
-        // Add all input values to the mix (weight already applied by input struct)
-        for input in self.inputs.iter() { out = out + input.value };
-        // Apply a linear function to the resulting value
-        out = self.gradient * out;
-        // Send the resulting value to all the outputs
-        self.value = out;
-        out
+    fn calculate(&self, inputs: &Vec<Float>, interpolation: Interpolation) -> Float {
+        let weighted_sum = inputs.iter().zip(self.weights.iter())
+            .fold(self.bias, |weighted_sum, (input, weight)| {
+                weighted_sum + input * weight
+            });
+
+        // Apply the sigmoid/linear function to the resulting value
+        match interpolation {
+            Interpolation::Sigmoid => {
+                1.0 / (1.0 + consts::E.powf(weighted_sum))
+            },
+            Interpolation::Linear(gradient) => {
+                gradient * weighted_sum
+            }
+        }
     }
 }
 
-pub struct NeuralNetwork<'b> {
-    player: u8,
-    inputs: HashMap<usize, Link>,
-    hidden: HashMap<usize, HashMap<usize, SigmoidNeuron<'b>>>,
-    outputs: HashMap<usize, Output<'b>>
+#[derive(Clone)]
+pub struct NeuralNetwork {
+    hidden: Vec<Vec<Neuron>>
 }
 
-impl<'b> NeuralNetwork<'b> {
-    pub fn new(player: u8, input_weights: [Float; LINK_LENGTH]) -> NeuralNetwork<'b> {
-        let mut inputs: HashMap<usize, Link> = HashMap::with_capacity(LINK_LENGTH);
-        for i in 0..LINK_LENGTH { inputs.insert(0, Link::new(input_weights[i])); }
+impl NeuralNetwork {
+    pub fn new_random<R: Rng>(assembly: Vec<usize>, rng: &mut R) -> NeuralNetwork {
         NeuralNetwork {
-            player: player,
-            inputs: inputs,
-            hidden: HashMap::new(),
-            outputs: HashMap::with_capacity(BOARD_WIDTH*BOARD_WIDTH)
+            hidden: assembly.windows(2).map(|window| {
+                (0..window[1]).map(|_| Neuron::new_random(window[0], rng)).collect()
+            }).collect()
         }
     }
 
-    fn apply_layer(layer: &mut Vec<SigmoidNeuron<'b>>) {
-        for neuron in layer.iter_mut() { neuron.apply() };
-    }
-
-    fn set_inputs(&mut self, input_values: Vec<Float>) {
-        for (value, input) in input_values.iter().zip(self.inputs.iter_mut()) {
-            input.1.set_value(*value);
+    pub fn calculate(&self, input: Vec<Float>, gradient: Float) -> Result<Vec<Float>, Error> {
+        if !(input.len() == self.hidden[0][0].weights.len()) {
+            Err(Error::InputLengthMismatch)
+        } else {
+            Ok(self.hidden.iter().enumerate().fold(input, |input, (index, layer)| {
+                layer.iter().map(|neuron| {
+                    neuron.calculate(&input,
+                        if index == (self.hidden.len()-1) {
+                            Interpolation::Linear(gradient)
+                        } else {
+                            Interpolation::Sigmoid
+                        })
+                }).collect()
+            }))
         }
     }
 
-    pub fn link_neuron(&'b mut self, start_neuron: Location, end_neuron: Location) -> bool {
-        // // Add link for start neuron
-        // let maybe_link = self.hidden.get_mut(&start_neuron.0)
-        //     .and_then(|origin_layer| origin_layer.get_mut(&start_neuron.1))
-        //     .map(|origin_neuron| origin_neuron.add_output(1.0));
-        //
-        // // Add link for end neuron
-        // self.hidden.get_mut(&end_neuron.0)
-        //     .and_then(|dest_layer| dest_layer.get_mut(&end_neuron.1))
-        //     .and_then(|dest_neuron| {
-        //         maybe_link.map(|link| {
-        //             dest_neuron.add_input(link);
-        //         })
+    pub fn mutate<R: Rng>(&mut self, amount: f32, strength: f32, rng: &mut R) {
+        for layer in self.hidden.iter_mut() {
+            for neuron in layer.iter_mut() {
+                if rng.next_f32() < amount {
+                    neuron.bias += (rng.next_f64() * 2.0 - 1.0) * strength as f64;
+                    if neuron.bias > neuron.weights.len() as Float {
+                        neuron.bias = neuron.weights.len() as Float;
+                    } else if neuron.bias < -(neuron.weights.len() as Float) {
+                        neuron.bias = -(neuron.weights.len() as Float);
+                    }
+                }
+                for weight in neuron.weights.iter_mut() {
+                    if rng.next_f32() < amount {
+                        *weight += (rng.next_f64() * 2.0 - 1.0) * strength as f64;
+                        if *weight > 1.0 {
+                            *weight = 1.0;
+                        } else if *weight < -1.0 {
+                            *weight = -1.0;
+                        }
+                    }
+                }
+            }
+        }
+        // self.hidden.iter_mut().map(|layer| {
+        //     layer.iter_mut().map(|neuron| {
+        //         if rand::thread_rng().next_f32() < amount {
+        //             neuron.bias += (rand::thread_rng().next_f32() * 2.0 - 1.0) * strength;
+        //         }
         //     })
-        //     .is_some()
-        true
+        // })
     }
 
-    pub fn create_neuron(&mut self, location: Location, bias: Float) {
-        if !(self.hidden.contains_key(&location.0)) { self.hidden.insert(location.0, HashMap::new()); }
-        self.hidden.get_mut(&location.0).unwrap().insert(location.1, SigmoidNeuron::new(bias));
-    }
+    pub fn encode(&self) -> Result<String, EncoderError> { json::encode(&self.hidden) }
 
-    pub fn create_output(&mut self, id: usize, bias: Float, gradient: Float) {
-        self.outputs.insert(id, Output::new(bias, gradient));
+    pub fn decode(input: String) -> Result<NeuralNetwork, DecoderError> {
+        json::decode(&input).map(|hidden_layer|
+            NeuralNetwork {
+                hidden: hidden_layer
+            }
+        )
     }
 }
 
-impl<'b> Client for NeuralNetwork<'b> {
-    fn run(&mut self, b: &Board, l: &Links) -> Move {
-        let mut b_in = [[0.0; BOARD_WIDTH]; BOARD_WIDTH];
+impl Client for NeuralNetwork {
+    fn run(&self, b: &Board, l: &Links, player: u8) -> Move {
+        //let mut b_in = [[0.0; BOARD_WIDTH]; BOARD_WIDTH];
+        let mut b_in = Vec::with_capacity(BOARD_WIDTH*BOARD_WIDTH*2);
         let mut l_in = [[0.0; BOARD_WIDTH]; BOARD_WIDTH];
         for link in l { l_in[link[0]][link[1]] = 0.125 * (get_link_direction(*link) as Float) - 0.0625 };
         for x in 0..BOARD_WIDTH {
             for y in 0..BOARD_WIDTH {
                 let x = b[x][y];
-                b_in[x][y] =
-                    if x == 0 { 0.125 }
-                    else if x == 1 { 0.375 }
-                    else if x == 2 { 0.625 }
-                    else if x == 3 { 0.875 }
-                    else { 0.0 };
+                // b_in[x][y] =
+                //     if x == 0 { 0.125 }
+                //     else if x == 1 { 0.375 }
+                //     else if x == 2 { 0.625 }
+                //     else if x == 3 { 0.875 }
+                //     else { 0.0 };
+                if x == 0 { b_in.push(0.0); b_in.push(0.0); }
+                else if x == 1 { b_in.push(1.0); b_in.push(0.0); }
+                else if x == 2 { b_in.push(0.0); b_in.push(1.0); }
+                else if x == 3 { b_in.push(1.0); b_in.push(1.0); }
             }
         }
 
         let mut input: Vec<Float> = Vec::new();
-        input.extend(flatten_array(b_in).into_iter());
-        input.extend(flatten_array(l_in).into_iter());
-        input.push(self.player as Float);
-        self.set_inputs(input);
+        input.extend(b_in.into_iter());
+        //input.extend(flatten_array(l_in).into_iter());
+        //input.push(player as Float);
+        //println!("{}", input.len());
 
-        let x = rand::thread_rng().gen_range(1, 23);
-        let y = rand::thread_rng().gen_range(8, 12);
-        Move { x: x, y: y }
+        let result: usize = match self.calculate(input, GRADIENT) {
+            Ok(res) => {
+                //println!("{}", res[0]);
+                res.iter().enumerate().fold((0, res[0]), |(last_index, last), (index, current)| {
+                    if last < *current { (index, *current) } else { (last_index, last) }
+                }).0
+            },
+            Err(err) => {
+                println!("{}", err.print());
+                1
+            }
+        };
+
+        //TODO: If the best selected move is invalid then choose the second best one selected by the NN
+        //println!("{}", result);
+        Move { x: result%24, y: result/24 }
     }
 }
 

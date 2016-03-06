@@ -20,22 +20,22 @@ pub type Player = SimpleClient;
 pub type Clients = (Player, Player);
 
 
-pub struct Game<A: Client, B: Client> {
+pub struct Game<'a, 'b, A: 'a+Client, B: 'b+Client> {
 	board: Board,
 	links: Links,
-	clients: (A, B),
+	clients: (&'a A, &'b B),
 	pub scores: (u8, u8)
 }
 
-impl<A: Client, B: Client> Game<A, B> {
-	pub fn new(p1: A, p2: B, swamps: bool) -> Game<A, B> {
+impl<'a, 'b, A: 'a+Client, B: 'b+Client> Game<'a, 'b, A, B> {
+	pub fn new_random<R: Rng>(p1: &'a A, p2: &'b B, rng: &mut R) -> Game<'a, 'b, A, B> {
 		let mut g = Game {
 			board: [[0; BOARD_WIDTH]; BOARD_WIDTH],
 			links: Vec::with_capacity(BOARD_WIDTH),
 			clients: (p1, p2),
 			scores: (0, 0)
 		};
-		if swamps { g.generate_swamps() }
+		g.generate_swamps(rng);
 		g
 	}
 
@@ -48,9 +48,8 @@ impl<A: Client, B: Client> Game<A, B> {
 		true
 	}
 
-	fn generate_swamp(&mut self, width: Field, height: Field) {
+	fn generate_swamp<R: Rng>(&mut self, width: Field, height: Field, rng: &mut R) {
 		let mut swamp_location;
-		let mut rng = rand::thread_rng();
 		let mut counter = 0;
 		loop {
 			swamp_location = (rng.gen_range(1, BOARD_WIDTH - width), rng.gen_range(1, BOARD_WIDTH - height));
@@ -72,12 +71,12 @@ impl<A: Client, B: Client> Game<A, B> {
 		self.board[BOARD_WIDTH-1][BOARD_WIDTH-1] = FIELD_SWAMP;
 	}
 
-	fn generate_swamps(&mut self) {
+	fn generate_swamps<R: Rng>(&mut self, rng: &mut R) {
 		self.generate_corner_swamps();
-		self.generate_swamp(3, 3);
-		self.generate_swamp(2, 2);
-		self.generate_swamp(2, 2);
-		self.generate_swamp(1, 1);
+		self.generate_swamp(3, 3, rng);
+		self.generate_swamp(2, 2, rng);
+		self.generate_swamp(2, 2, rng);
+		self.generate_swamp(1, 1, rng);
 	}
 
 	fn score_branch(&self, link: Link, player: usize, done: &mut Links) -> Links {
@@ -141,11 +140,11 @@ impl<A: Client, B: Client> Game<A, B> {
 	pub fn run(&mut self) -> [u8; 2] {
 		let mut scores = [0, 0];
 		for _ in 0..30 {
-			let mv = self.clients.0.run(&self.board, &self.links);
+			let mv = self.clients.0.run(&self.board, &self.links, 0);
 			if self.execute_move(mv, 0) { self.recalculate_score(0, &mut scores) };
 			if scores[0] > 23 { println!("Player 0 won!"); break; }
 
-			let mv = self.clients.1.run(&self.board, &self.links);
+			let mv = self.clients.1.run(&self.board, &self.links, 0);
 			if self.execute_move(mv, 1) { self.recalculate_score(1, &mut scores) };
 			if scores[1] > 23 { println!("Player 1 won!"); break; }
 		}

@@ -1,7 +1,7 @@
 use structures::*;
 
 pub trait Client {
-    fn run(&mut self, _b: &Board, _l: &Links) -> Move;
+    fn run(&self, _b: &Board, _l: &Links, player: u8) -> Move;
 }
 
 #[cfg(feature = "simple_client")]
