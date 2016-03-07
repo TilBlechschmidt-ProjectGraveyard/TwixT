@@ -154,7 +154,6 @@ impl Trainer {
                 let pb = pb.clone();
                 contestants.push(contestant);
                 threads.push(thread::spawn(move || {
-                    println!("{}", contestants.len());
                     //Run those games
                     contestants.into_iter().map(move |contestant| {
                         let score_sum = score_references.iter().flat_map(|score_ref| {
