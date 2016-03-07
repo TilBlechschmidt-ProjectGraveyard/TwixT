@@ -132,7 +132,8 @@ impl Trainer {
         //     }
         // }).collect();
 
-        let pb = Arc::new(Mutex::new(ProgressBar::new(self.current_generation.len()*self.score_references.len()*games_per_ref)));
+        let pb = ProgressBar::new(self.current_generation.len()*self.score_references.len()*games_per_ref);
+        let pb = Arc::new(Mutex::new(pb));
 
         let generation_size = self.current_generation.len();
         let current_generation = self.current_generation.clone();
