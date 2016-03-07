@@ -28,14 +28,14 @@ pub struct Game<'a, 'b, A: 'a+Client, B: 'b+Client> {
 }
 
 impl<'a, 'b, A: 'a+Client, B: 'b+Client> Game<'a, 'b, A, B> {
-	pub fn new_random<R: Rng>(p1: &'a A, p2: &'b B, rng: &mut R) -> Game<'a, 'b, A, B> {
+	pub fn new_random(p1: &'a A, p2: &'b B) -> Game<'a, 'b, A, B> {
 		let mut g = Game {
 			board: [[0; BOARD_WIDTH]; BOARD_WIDTH],
 			links: Vec::with_capacity(BOARD_WIDTH),
 			clients: (p1, p2),
 			scores: (0, 0)
 		};
-		g.generate_swamps(rng);
+		g.generate_swamps(&mut rand::thread_rng());
 		g
 	}
 
