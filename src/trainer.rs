@@ -152,7 +152,9 @@ impl Trainer {
             if (index + 1) % contestants_per_thread == 0 {
                 let score_references = score_references.clone(); //Create copies of the mutexes not the sfs themselves
                 let pb = pb.clone();
+                contestants.push(contestant);
                 threads.push(thread::spawn(move || {
+                    println!("{}", contestants.len());
                     //Run those games
                     contestants.into_iter().map(move |contestant| {
                         let score_sum = score_references.iter().flat_map(|score_ref| {
