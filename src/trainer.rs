@@ -196,6 +196,7 @@ impl Trainer {
 
         results.sort_by(|a, b| if a.1 < b.1 {Ordering::Greater} else {Ordering::Less});
 
+        println!("");
         println!("Best average score of generation is: {}", results[0].1);
 
         self.score_references = results.iter().take(score_references_amount).map(|score_reference| {
