@@ -1,14 +1,12 @@
 #![allow(dead_code)]
+extern crate num_cpus;
 use std::cmp::Ordering;
 use clients::*;
 use structures::*;
 use rand::Rng;
 use std::thread;
 use pbr::ProgressBar;
-//use std::sync::mpsc::channel;
 use std::sync::{Arc, Mutex};
-
-const CPU_CORES: usize = 4;
 
 pub struct TrainerConfig {
     /// Amount of clients that one given generation consists of
@@ -146,7 +144,7 @@ impl Trainer {
         // }).collect::<Vec<_>>();
         self.score_references = Vec::with_capacity(score_references_amount);
 
-        let contestants_per_thread: usize = (generation_size as f32 / CPU_CORES as f32).ceil() as usize;
+        let contestants_per_thread: usize = (generation_size as f32 / num_cpus::get() as f32).ceil() as usize;
         let mut threads = Vec::with_capacity(self.current_generation.len() / contestants_per_thread);
         current_generation.into_iter().enumerate().fold( Vec::new(), |mut contestants, (index, contestant)| {
             if (index + 1) % contestants_per_thread == 0 {

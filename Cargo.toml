@@ -14,6 +14,7 @@ xml = []
 [dependencies]
 rustc-serialize = "0.3"
 term-painter = "0.2.1"
+num_cpus = "0.2.11"
 time = "0.1.34"
 pbr = "0.0.5"
 rand = "0.3.0"
