@@ -6,7 +6,7 @@ use clients::Client;
 pub type Float = f64;
 pub type Location = (usize, usize);
 const PREALLOC_IO: usize = 576;
-pub const INPUT_LENGTH: usize = 1729;
+pub const INPUT_LENGTH: usize = 5761;//1729;
 pub const OUTPUT_LENGTH: usize = 576;
 const GRADIENT: Float = 1.0;
 
@@ -46,9 +46,8 @@ impl Neuron {
 
     pub fn new_random<R: Rng>(weight_count: usize, rng: &mut R) -> Neuron {
         Neuron {
-            bias: rng.next_f64(),//TODO: Set some random bias //rng.next_f64()*weight_count as f64,
-            //weights: (0..weight_count).map(|_| rng.next_f64() * 2.0 - 1.0).collect()
-            weights: (0..weight_count).map(|_| rng.next_f64() * 20.0 - 10.0).collect()
+            bias: rng.next_f64() * 2.0 - 1.0,//TODO: Set some random bias //rng.next_f64()*weight_count as f64,
+            weights: (0..weight_count).map(|_| rng.next_f64() * 2.0 - 1.0).collect()
         }
     }
 
@@ -112,11 +111,11 @@ impl NeuralNetwork {
                 }
                 for weight in neuron.weights.iter_mut() {
                     if rng.next_f32() < amount {
-                        *weight += (rng.next_f64() * 20.0 - 10.0) * strength as f64;
-                        if *weight > 10.0 {
-                            *weight = 10.0;
-                        } else if *weight < -10.0 {
-                            *weight = -10.0;
+                        *weight += (rng.next_f64() * 2.0 - 1.0) * strength as f64;
+                        if *weight > 1.0 {
+                            *weight = 1.0;
+                        } else if *weight < -1.0 {
+                            *weight = -1.0;
                         }
                     }
                 }
@@ -138,9 +137,12 @@ impl NeuralNetwork {
 impl Client for NeuralNetwork {
     fn run(&self, b: &Board, l: &Links, player: u8) -> Move {
         let mut b_in = Vec::with_capacity(BOARD_WIDTH*BOARD_WIDTH*2);
-        let mut l_in = [[0.0; BOARD_WIDTH]; BOARD_WIDTH];
+        let mut l_in = [ [ [0;8]; BOARD_WIDTH]; BOARD_WIDTH];
         //TODO: Multiple links in one spot arent represented with this!!!
-        for link in l { l_in[link[0]][link[1]] = 0.125 * (get_link_direction(*link) as Float) - 0.0625 };
+        //for link in l { l_in[link[0]][link[1]] = 0.125 * (get_link_direction(*link) as Float) - 0.0625 };
+
+        //TODO: Both ends should contain the link! And this made everything slow as hell
+        for link in l { l_in[link[0]][link[1]][get_link_direction(*link)] = 1; }
         for x in 0..BOARD_WIDTH {
             for y in 0..BOARD_WIDTH {
                 let x = b[x][y];
@@ -153,8 +155,11 @@ impl Client for NeuralNetwork {
 
         let mut input: Vec<Float> = Vec::new();
         input.extend(b_in.into_iter());
-        input.extend(flatten_array(l_in).into_iter());
+        //input.extend(flatten_array(l_in).into_iter());
+        input.extend(flatten_links(l_in).into_iter());
         input.push(player as Float);
+
+        //println!("{}", input.len());
 
         let result: usize = match self.calculate(input, GRADIENT) {
             Ok(res) => {
@@ -181,34 +186,36 @@ fn get_link_direction(link: [usize; 4]) -> usize {
     let start = [link[0], link[1]];
     let end = [link[2], link[3]];
     if (start[0].saturating_sub(2) == end[0]) && (start[1] + 1 == end[1]) {
-        direction = 0
-    } else if (start[0].saturating_sub(1) == end[0]) && (start[1] + 2 == end[1]) {
         direction = 1
-    } else if (start[0] + 1 == end[0]) && (start[1] + 2 == end[1]) {
+    } else if (start[0].saturating_sub(1) == end[0]) && (start[1] + 2 == end[1]) {
         direction = 2
-    } else if (start[0] + 2 == end[0]) && (start[1] + 1 == end[1]) {
+    } else if (start[0] + 1 == end[0]) && (start[1] + 2 == end[1]) {
         direction = 3
-    } else if (start[0] + 2 == end[0]) && (start[1].saturating_sub(1) == end[1]) {
+    } else if (start[0] + 2 == end[0]) && (start[1] + 1 == end[1]) {
         direction = 4
-    } else if (start[0] + 1 == end[0]) && (start[1].saturating_sub(2) == end[1]) {
+    } else if (start[0] + 2 == end[0]) && (start[1].saturating_sub(1) == end[1]) {
         direction = 5
-    } else if (start[0].saturating_sub(1) == end[0]) && (start[1].saturating_sub(2) == end[1]) {
+    } else if (start[0] + 1 == end[0]) && (start[1].saturating_sub(2) == end[1]) {
         direction = 6
-    } else if (start[0].saturating_sub(2) == end[0]) && (start[1] + 1 == end[1]) {
+    } else if (start[0].saturating_sub(1) == end[0]) && (start[1].saturating_sub(2) == end[1]) {
         direction = 7
-    } else {
+    } else if (start[0].saturating_sub(2) == end[0]) && (start[1] + 1 == end[1]) {
         direction = 8
+    } else {
+        direction = 0
     }
     direction
 }
 
-fn flatten_array(arr: [[Float; BOARD_WIDTH]; BOARD_WIDTH]) -> [Float; BOARD_WIDTH*BOARD_WIDTH] {
+fn flatten_links(arr: [[[usize; 8]; BOARD_WIDTH]; BOARD_WIDTH]) -> [Float; BOARD_WIDTH*BOARD_WIDTH*8] {
     let mut i = 0;
-    let mut out = [0.0; BOARD_WIDTH*BOARD_WIDTH];
+    let mut out = [0.0; BOARD_WIDTH*BOARD_WIDTH*8];
     for x in 0..BOARD_WIDTH {
         for y in 0..BOARD_WIDTH {
-            out[i] = arr[x][y];
-            i = i + 1;
+            for z in 0..8 {
+                out[i] = arr[x][y][z] as Float;
+                i = i + 1;
+            }
         }
     }
     out

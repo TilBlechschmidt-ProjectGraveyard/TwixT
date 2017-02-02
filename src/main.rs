@@ -8,8 +8,8 @@ mod clients;
 mod trainer;
 use trainer::*;
 
+use std::io::prelude::*;
 use std::fs::File;
-use std::io::Write;
 
 fn main() {
     let mut rng = rand::thread_rng();
@@ -19,10 +19,11 @@ fn main() {
         println!(" ");
         println!(" ");
         println!("Running generation #{}", generation_index);
-        trainer.step(&mut rng);
+        let best_nn = trainer.step(&mut rng);
 
-        // let f = File::create("test.txt").unwrap();
-        // f.write_all(&best_nn.unwrap().to_string());
+
+        let mut buffer = File::create("best.nn").unwrap();
+        buffer.write_fmt(format_args!("{}", best_nn.encode().unwrap())).unwrap();
 
         generation_index += 1;
     }

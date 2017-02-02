@@ -45,11 +45,11 @@ impl TrainerConfig {
     pub fn new() -> TrainerConfig {
         TrainerConfig {
             generation_size: 60,
-            survivor_count: 20,
+            survivor_count: 10,
             score_references: 5,
             games_per_client: 10,
-            mutation_amount: 0.3,
-            mutation_strength: 0.1529,
+            mutation_amount: 1.0, //Percentage
+            mutation_strength: 10.0529,
             structure: vec![INPUT_LENGTH, 600, 300, 150, 100, 100, 100, OUTPUT_LENGTH]
         }
         // TrainerConfig {
@@ -81,7 +81,7 @@ pub struct Trainer {
 }
 
 impl Trainer {
-    pub fn step<R: Rng>(&mut self, rng: &mut R) {// -> NeuralNetwork {
+    pub fn step<R: Rng>(&mut self, rng: &mut R) -> NeuralNetwork {
 
         let games_per_ref = self.games_per_client / self.score_references.len();
 
@@ -160,7 +160,7 @@ impl Trainer {
 
                             (0..games_per_ref).map(|game_id| {
                                 //TODO: Use the same game field for the same generation.
-                                let score;
+                                let score; //= Game::new_random(&contestant, score_ref).run()[0];
                                 if game_id%2 == 0 { // Change sides for every second game
                                     score = Game::new_random(&contestant, score_ref).run()[0];
                                 } else {
@@ -199,6 +199,8 @@ impl Trainer {
         println!("");
         println!("Best average score of generation is: {}", results[0].1);
 
+        let best_nn = results[0].0.clone();
+
         self.score_references = results.iter().take(score_references_amount).map(|score_reference| {
             score_reference.0.clone()
         }).collect();
@@ -215,6 +217,8 @@ impl Trainer {
             mutations.push(survivor);
             mutations
         }).collect::<Vec<_>>();
+
+        best_nn
 
         // let mut pb = ProgressBar::new(self.current_generation.len()*self.score_references.len()*games_per_ref);
         // let mut avg_scores: Vec<(usize, f32)> = self.current_generation.iter().enumerate().map(|(index, contestant)| {
